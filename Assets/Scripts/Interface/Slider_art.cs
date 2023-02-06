@@ -30,10 +30,12 @@ public class Slider_art : MonoBehaviour
     public float get_value(){
         return slider1.value;
     }
-    public void set_max(string value){
-        this.max.text = value;  
+    public void set_max(float value){
+        this.max.text = ""+value; 
+        this.slider1.maxValue= value; 
     }
-    public void set_min(string value){
-        this.min.text = value;  
+    public void set_min(float value){
+        this.min.text = ""+value;
+        this.slider1.minValue = value;  
     }
 }

@@ -15,7 +15,7 @@ public class Adaptador_art_puma : MonoBehaviour
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
    
    
-    private Slider [] sliders = new Slider[6];
+    private Transform [] sliders = new Transform[6];
     private Slider_art[] script_slider = new Slider_art[6];
 
     private Rangos_arts rangos_arts = new Rangos_arts();
@@ -48,15 +48,12 @@ public class Adaptador_art_puma : MonoBehaviour
         
         // Inicialización de los sliders
         for (int i = 0; i<6; i++){
-            sliders[i]= content_arts.transform.Find("slider"+(i+1)+"/Slider").GetComponent<Slider>();
-            sliders[i].minValue = rangos_arts.rango_arts[i, 0];
-            sliders[i].maxValue = rangos_arts.rango_arts[i, 1];
-
-
-            // Asignación de los minimos y maximos (rangos articulaciones)
+            sliders[i]= content_arts.transform.Find("slider"+(i+1));
             script_slider[i] = sliders[i].GetComponent<Slider_art>();
-            script_slider[i].set_max(""+rangos_arts.rango_arts[i, 1]);
-            script_slider[i].set_min(""+rangos_arts.rango_arts[i, 0]);
+            
+            // Asignacion de los rangos de cada articulacion
+            script_slider[i].set_max(rangos_arts.rango_arts[i, 1]);
+            script_slider[i].set_min(rangos_arts.rango_arts[i, 0]);
         }
             
     }
@@ -72,11 +69,6 @@ public class Adaptador_art_puma : MonoBehaviour
             array_val_arts.Add(Instantiate(val_arts, content_trays, false));
             array_val_arts[num_val_arts].transform.name = "val_arts"+num_val_arts;
 
-            // // Agregación del los valores de cada slider
-            for (int i=0; i<6; i++){
-                this.agregar_valores_tray(array_val_arts[num_val_arts], "val_art"+(i+1), sliders[i].value);
-            }
-
             // Ampliación del content
             dim_content.y +=20;
             content_trays.sizeDelta  = dim_content;
@@ -86,6 +78,12 @@ public class Adaptador_art_puma : MonoBehaviour
 
             // Activar el toggle o checkbox
             this.activar_desactivar_toggle(array_val_arts[num_val_arts], true);
+            
+            
+            // Agregación del los valores a las trayectorias
+            for (int i=0; i<6; i++){
+                agregar_valores_tray(array_val_arts[num_val_arts],"val_art"+(i+1), script_slider[i].get_value()); 
+            }
             num_val_arts ++;
         }
     }
