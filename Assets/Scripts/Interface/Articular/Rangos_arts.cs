@@ -7,11 +7,11 @@ namespace RobSof.Assets.Scripts.Interface.Articular
 {
     public class Rangos_arts
     {
-        private int art1_min = 0;
+        private int art1_min = -90;
         private int art1_max = 90;
 
-        private int art2_min = 0;
-        private int art2_max = 100;
+        private int art2_min = -45;
+        private int art2_max = 45;
 
         private int art3_min = 0;
         private int art3_max = 50;
@@ -25,7 +25,9 @@ namespace RobSof.Assets.Scripts.Interface.Articular
         private int art6_min = 0;
         private int art6_max = 60;
 
+
         public int [,] rango_arts = new int[6,2];
+        public float [] posiciones_iniciales = new float[6];
 
         public Rangos_arts(){
             rango_arts[0,0] = art1_min;
@@ -46,6 +48,9 @@ namespace RobSof.Assets.Scripts.Interface.Articular
             rango_arts[5,0] = art6_min;
             rango_arts[5,1] = art6_max;
 
+            for (int j=0; j<6; j++){
+                posiciones_iniciales[j] = 0;//(rango_arts[j, 1]+rango_arts[j, 0])/2;
+            }
         }
     }
 }

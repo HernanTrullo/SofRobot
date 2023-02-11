@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RobSof.Assets.Scripts.Interface.Articular;
 using TMPro;
+using System.Threading;
 
 public class Adaptador_art_puma : MonoBehaviour
 {
@@ -11,13 +12,25 @@ public class Adaptador_art_puma : MonoBehaviour
     public RectTransform content_trays;      // El ambiente content del scroll_trays view
     public RectTransform content_arts;       // El ambiente content del scrol_arts view
     public GameObject val_arts;       // El prebaf de las trayectorias articulares
+    
+
     public Button btn_agregar;          // Boton agregar
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
-   
-   
-    private Transform [] sliders = new Transform[6];
-    private Slider_art[] script_slider = new Slider_art[6];
+    public Button btn_probar;           // Boton para probar una taryectoria en los sliders
+    
+    public GameObject PUMA_gemelo;       // gemelo digital
 
+    // Script que maneja el gemelo digital
+    private Gemelo_digital PUMA_script;
+
+    // Numero de articulaciones 
+    private int NUMERO_ARTICULACIONES = 6;
+
+    // Atributos para manejar  los sliders
+    private Transform [] sliders;
+    private Slider_art[] script_slider;
+
+    private float [] pos_pasada;
     private Rangos_arts rangos_arts = new Rangos_arts();
 
     private List<GameObject> array_val_arts;
@@ -28,9 +41,19 @@ public class Adaptador_art_puma : MonoBehaviour
     private Vector3 pos_prefab;
     private Vector2 dim_content;
 
+    // Llamada a la clase trayectoria
+    private Trayectoria tray = new Trayectoria();
+    private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
     // Start is called before the first frame update
     void Start()
     {
+        sliders = new Transform[NUMERO_ARTICULACIONES];
+        script_slider = new Slider_art[NUMERO_ARTICULACIONES];
+        pos_pasada = new float[NUMERO_ARTICULACIONES];
+
+        // Se instancia el script que maneja el gameObject (PUMA) 
+        PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
+
         // Se instancia la lista de los prebab de las trayectorias
         array_val_arts = new List<GameObject>();
 
@@ -41,23 +64,36 @@ public class Adaptador_art_puma : MonoBehaviour
         // Se coloca el boton a la escucha
         btn_agregar.onClick.AddListener(agregar);
         btn_eliminar.onClick.AddListener(eliminar);
+        btn_probar.onClick.AddListener(probar);
 
         // Inicialización de la posición inicia del prefab
         pos_prefab = val_arts.transform.localPosition;
         dim_content = content_trays.sizeDelta;
         
-        // Inicialización de los sliders
-        for (int i = 0; i<6; i++){
+        // Inicialización de los sliders, gemelo, taryectoias
+        for (int i = 0; i<NUMERO_ARTICULACIONES; i++){
+            // Sliders
             sliders[i]= content_arts.transform.Find("slider"+(i+1));
             script_slider[i] = sliders[i].GetComponent<Slider_art>();
-            
+
             // Asignacion de los rangos de cada articulacion
             script_slider[i].set_max(rangos_arts.rango_arts[i, 1]);
             script_slider[i].set_min(rangos_arts.rango_arts[i, 0]);
-        }
-            
+
+            // Posiciones iniciales sliders
+            pos_pasada[i] = rangos_arts.posiciones_iniciales[i];
+            script_slider[i].set_value(""+rangos_arts.posiciones_iniciales[i]);
+
+            // Posiciones iniciales Gemelo digital
+            PUMA_script.rotar_articulación(i, pos_pasada[i]);   
+        } 
     }
 
+    void funciones_de_prueba(List<float> array){
+        for(int j=0; j<array.Count; j++){
+            Debug.Log(""+array[j]);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -117,6 +153,37 @@ public class Adaptador_art_puma : MonoBehaviour
 
             dim_content.y = 50+20*(num_val_arts-1);
             content_trays.sizeDelta  = dim_content;
+        }
+    }
+
+    void probar (){
+        // Retornar los valores de las sliders
+        float [] pos_inicial = new float [NUMERO_ARTICULACIONES];
+        float [] pos_final = new float [NUMERO_ARTICULACIONES];
+
+        // Asignan los valores finales e iniciales
+        for (int j=0; j<NUMERO_ARTICULACIONES; j++){
+            pos_inicial[j] = pos_pasada[j];
+            pos_final[j] = script_slider[j].get_value();
+        }
+
+        // Se retornan "NUMERO DE ARICULACIONES" trayectorias
+        List<List<float>> trayectoria = tray.tray_articular(pos_inicial, pos_final, 4, NUMERO_ARTICULACIONES);
+
+        // Se inicializa la corrutina
+        StartCoroutine(mover_robot(trayectoria));
+    }
+
+    IEnumerator mover_robot(List<List<float>> tray){
+        for (int i=0; i<tray[0].Count; i++ ){
+            for (int j=0; j<NUMERO_ARTICULACIONES; j++){
+                PUMA_script.rotar_articulación(j, tray[j][i]);
+            } 
+            Thread.Sleep(TIEMPO_MUESTREO);
+            yield return 0;   
+        }
+        for (int j=0; j<NUMERO_ARTICULACIONES; j++){
+            pos_pasada[j] = tray[j][tray[0].Count-1];
         }
     }
 

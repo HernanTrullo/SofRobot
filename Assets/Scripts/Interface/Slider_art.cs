@@ -15,7 +15,9 @@ public class Slider_art : MonoBehaviour
     {
         slider1.onValueChanged.AddListener(delegate{
             slider1.value = Mathf.Round(slider1.value*100f)/100f;
-            setvalue(slider1.value.ToString("0.##"));});
+            set_value(slider1.value.ToString("0.##"));});
+
+                
         
     }
 
@@ -24,8 +26,9 @@ public class Slider_art : MonoBehaviour
     {
         
     }
-    void setvalue(string value){
+    public void set_value(string value){
         this.value.text = value;
+        slider1.value = float.Parse(value);
     }
     public float get_value(){
         return slider1.value;
