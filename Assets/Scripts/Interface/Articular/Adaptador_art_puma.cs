@@ -17,8 +17,10 @@ public class Adaptador_art_puma : MonoBehaviour
     public Button btn_agregar;          // Boton agregar
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
     public Button btn_probar;           // Boton para probar una taryectoria en los sliders
-    
+    public Button btn_Q0;               // Boton para llevar el robot a la posicion inicial
+
     public GameObject PUMA_gemelo;       // gemelo digital
+    public RectTransform content_posiciones; // Posiciones articulares
 
     // Script que maneja el gemelo digital
     private Gemelo_digital PUMA_script;
@@ -30,7 +32,6 @@ public class Adaptador_art_puma : MonoBehaviour
     private Transform [] sliders;
     private Slider_art[] script_slider;
 
-    private float [] pos_pasada;
     private Rangos_arts rangos_arts = new Rangos_arts();
 
     private List<GameObject> array_val_arts;
@@ -49,7 +50,6 @@ public class Adaptador_art_puma : MonoBehaviour
     {
         sliders = new Transform[NUMERO_ARTICULACIONES];
         script_slider = new Slider_art[NUMERO_ARTICULACIONES];
-        pos_pasada = new float[NUMERO_ARTICULACIONES];
 
         // Se instancia el script que maneja el gameObject (PUMA) 
         PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
@@ -65,6 +65,7 @@ public class Adaptador_art_puma : MonoBehaviour
         btn_agregar.onClick.AddListener(agregar);
         btn_eliminar.onClick.AddListener(eliminar);
         btn_probar.onClick.AddListener(probar);
+        btn_Q0.onClick.AddListener(v_Qo);
 
         // Inicialización de la posición inicia del prefab
         pos_prefab = val_arts.transform.localPosition;
@@ -81,12 +82,12 @@ public class Adaptador_art_puma : MonoBehaviour
             script_slider[i].set_min(rangos_arts.rango_arts[i, 0]);
 
             // Posiciones iniciales sliders
-            pos_pasada[i] = rangos_arts.posiciones_iniciales[i];
-            script_slider[i].set_value(""+rangos_arts.posiciones_iniciales[i]);
+            script_slider[i].set_value(""+rangos_arts.posiciones_iniciales[i].ToString("0.##"));
 
-            // Posiciones iniciales Gemelo digital
-            PUMA_script.rotar_articulación(i, pos_pasada[i]);   
-        } 
+            // Gemelo digital
+            PUMA_script.rotar_articulación(i, rangos_arts.posiciones_iniciales[i]);
+
+        }
     }
 
     void funciones_de_prueba(List<float> array){
@@ -163,7 +164,7 @@ public class Adaptador_art_puma : MonoBehaviour
 
         // Asignan los valores finales e iniciales
         for (int j=0; j<NUMERO_ARTICULACIONES; j++){
-            pos_inicial[j] = pos_pasada[j];
+            pos_inicial[j] = Posiciones_robot.POS_ART[j];
             pos_final[j] = script_slider[j].get_value();
         }
 
@@ -178,13 +179,19 @@ public class Adaptador_art_puma : MonoBehaviour
         for (int i=0; i<tray[0].Count; i++ ){
             for (int j=0; j<NUMERO_ARTICULACIONES; j++){
                 PUMA_script.rotar_articulación(j, tray[j][i]);
+                Posiciones_robot.POS_ART[j]= tray[j][i];
+                Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
             } 
             Thread.Sleep(TIEMPO_MUESTREO);
             yield return 0;   
         }
+    }
+
+    void v_Qo(){
         for (int j=0; j<NUMERO_ARTICULACIONES; j++){
-            pos_pasada[j] = tray[j][tray[0].Count-1];
+            script_slider[j].set_value(""+rangos_arts.posiciones_iniciales[j].ToString("0.##"));
         }
+        probar();
     }
 
     void activar_desactivar_toggle(GameObject art_vals, bool interactable){

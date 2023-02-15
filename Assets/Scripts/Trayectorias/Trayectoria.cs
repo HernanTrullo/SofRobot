@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class Trayectoria
 {
-    public static float TIEMPO_MUESTREO = 0.005f;
+    public static float TIEMPO_MUESTREO = 0.01f;
+    private PUMA_modelo puma_modelo = new PUMA_modelo();
 
     public List<float> grado_5(float pos_inicial, float pos_final, int T_FINAL){
         List<float> tray = new List<float>();
@@ -26,6 +27,35 @@ public class Trayectoria
             tray.Add(grado_5(pos_inicial[j], pos_final[j], T_FINAL));
         }
         return  tray;
+    }
+    public (List<List<float>>, List<List<float>>)tray_cartesiana(float [] pos_inicial, float [] pos_final, int T_FINAL, int num_arts){
+        List<List<float>> tray = new List<List<float>>(); // tray articular
+        List<List<float>> tc = new List<List<float>>(); // tray cartesiana
+        List<List<float>> tt = new List<List<float>>(); // tray articular transpuesta
+
+        for (int j=0; j<6; j++){ // va hasta 6 pues son {x,y,z rotx, roty, rotz}
+            tc.Add(grado_5(pos_inicial[j], pos_final[j], T_FINAL));
+        }
+       
+        // Llamada del MGI
+        for (int i=0; i<tc[0].Count; i++){
+            tt.Add(puma_modelo.mgi_puma(tc[0][i], tc[1][i], tc[2][i], tc[3][i], tc[4][i], tc[5][i]));
+        }
+
+        // Transponer Matriz tt
+        for (int i =0; i<tt[0].Count;i++){
+            List<float> _tray = new List<float>();
+            for (int j=0; j<tt.Count; j++){
+                _tray.Add(tt[j][i]*Mathf.Rad2Deg);
+            }
+            tray.Add(_tray);
+        }
+        // para retornar los ultimos valores de la trayectoria cartesiana
+        int end = tc[0].Count-1;
+        List<float> final_tc = new List<float>() {tc[0][end], tc[1][end],tc[2][end], 
+                                                    tc[3][end],tc[4][end], tc[5][end]};
+
+        return (tray, tc);
     }
     
 }

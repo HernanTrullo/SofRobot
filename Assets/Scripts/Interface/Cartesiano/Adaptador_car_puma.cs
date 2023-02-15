@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Threading;
+using RobSof.Assets.Scripts.Interface.Articular;
 
 public class Adaptador_car_puma : MonoBehaviour
 {
@@ -12,7 +14,11 @@ public class Adaptador_car_puma : MonoBehaviour
 
     public Button btn_agregar;          // Boton agregar
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
-   
+    public Button btn_probar;           // Boton probar trayectoria
+    public Button btn_P0;               // Boton para enviar a la posicion (cartesiana) inicial
+
+    public GameObject PUMA_gemelo;       // gemelo digital
+
     private TMP_InputField [] input_tray_cart = new TMP_InputField[6];
 
     private List<GameObject> array_val_cart = new List<GameObject>();  // Lista de las trayectorias agregadas
@@ -24,12 +30,32 @@ public class Adaptador_car_puma : MonoBehaviour
     private Vector3 pos_prefab;
     private Vector2 dim_content;
 
+    // Clase trayectoria
+    Trayectoria tray = new Trayectoria();
+    private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
 
+
+    // Script que maneja el gemelo digital
+    private Gemelo_digital PUMA_script;
+
+    // Modelo del puma
+    PUMA_modelo pm_mod = new PUMA_modelo();
+
+    // rangos de las articulaciones
+    Rangos_arts rangos_arts = new Rangos_arts();
+
+    // Tiempo TRAYECTORIA
+    int TIEMPO_TRAYECTORIA = 3;
     // Start is called before the first frame update
     void Start()
     {
+        // Se instancia el script que maneja el gameObject (PUMA) 
+        PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
+
+
         for(int i=0; i<6; i++){
             this.input_tray_cart[i] = input_tray.Find("cart_"+(i+1)).GetComponent<TMP_InputField>();
+            this.input_tray_cart[i].text = "" + Posiciones_robot.POS_CAR[i];
         }
 
         // Agregar primer elemento tray a la lista array_val _cart
@@ -41,6 +67,8 @@ public class Adaptador_car_puma : MonoBehaviour
         // Botones a la escucha
         btn_agregar.onClick.AddListener(agregar);
         btn_eliminar.onClick.AddListener(eliminar);
+        btn_probar.onClick.AddListener(probar);
+        btn_P0.onClick.AddListener(v_Po);
 
         // Inicialización de la posición inicia del prefab
         pos_prefab = val_cart.transform.localPosition;
@@ -48,6 +76,11 @@ public class Adaptador_car_puma : MonoBehaviour
 
     }
 
+    void funciones_de_prueba(List<float> array){
+        for(int j=0; j<array.Count; j++){
+            Debug.Log(""+array[j]);
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -109,6 +142,62 @@ public class Adaptador_car_puma : MonoBehaviour
             dim_content.y = 50+20*(num_val_cart-1);
             content_tray.sizeDelta  = dim_content;
         }
+    }
+    void probar(){
+        // Posicion final e inicial
+        float [] pos_inicial = new float [6];
+        float [] pos_final = new float [6];
+
+        // Asignan los valores finales e iniciales
+        for (int j=0; j<6; j++){
+            pos_inicial[j] = Posiciones_robot.POS_CAR[j];
+            pos_final[j] = float.Parse(input_tray_cart[j].text);
+        }
+
+        // retornar trayectoria
+        var trayectoria = tray.tray_cartesiana(pos_inicial, pos_final, TIEMPO_TRAYECTORIA, 6);
+        // Se inicializa la corrutina
+        StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
+    }
+
+    IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
+        for (int i=0; i<tray[0].Count; i++ ){
+            for (int j=0; j<6; j++){
+                PUMA_script.rotar_articulación(j, tray[j][i]);
+                // Se asignan a las posiciones cartesianas
+                Posiciones_robot.POS_CAR[j] = tc[j][i];
+                Posiciones_robot.pos_car[j].text = tc[j][i].ToString("0.##");
+
+                // Se asignas a las posiciones articulares
+                Posiciones_robot.POS_ART[j] = tray[j][i];
+                Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
+            } 
+            Thread.Sleep(TIEMPO_MUESTREO);
+            yield return 0;   
+        }
+    }
+    IEnumerator mover_robot1(List<List<float>> tray){
+        for (int i=0; i<tray[0].Count; i++ ){
+            for (int j=0; j<6; j++){
+                PUMA_script.rotar_articulación(j, tray[j][i]);
+                Posiciones_robot.POS_ART[j]= tray[j][i];
+                Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
+            } 
+            Thread.Sleep(TIEMPO_MUESTREO);
+            yield return 0;   
+        }
+    }
+
+    void v_Po(){
+        float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
+
+        for (int i=0; i<6; i++){
+            input_tray_cart[i].text = ""+rangos_arts.posiciones_iniciales_cartesianas[i].ToString("0.##");
+            pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
+        }
+        
+        List<List<float>> tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
+        StartCoroutine(mover_robot1(tray_));
     }
 
     void activar_desactivar_toggle(GameObject art_vals, bool interactable){

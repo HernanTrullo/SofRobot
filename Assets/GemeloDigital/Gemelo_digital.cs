@@ -31,7 +31,12 @@ public class Gemelo_digital : MonoBehaviour
         
     }
     public void rotar_articulación(int index_art, float angle){
-        rotacion.y = angle;
+        if (index_art >=0 && index_art <=2 || index_art==5){
+            rotacion.y = -angle;
+        }
+        else{
+            rotacion.y = angle;
+        }
         arts[index_art].transform.localRotation = Quaternion.Euler(rotacion);
     }
 }

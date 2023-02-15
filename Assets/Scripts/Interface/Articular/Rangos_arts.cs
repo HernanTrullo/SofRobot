@@ -10,24 +10,37 @@ namespace RobSof.Assets.Scripts.Interface.Articular
         private int art1_min = -90;
         private int art1_max = 90;
 
-        private int art2_min = -45;
-        private int art2_max = 45;
+        private int art2_min = 0;
+        private int art2_max = 135;
 
-        private int art3_min = 0;
-        private int art3_max = 50;
+        private int art3_min = 100;
+        private int art3_max = 270;
 
-        private int art4_min = 0;
+        private int art4_min = -70;
         private int art4_max = 70;
 
-        private int art5_min = 0;
+        private int art5_min = -80;
         private int art5_max = 80;
 
-        private int art6_min = 0;
+        private int art6_min = -60;
         private int art6_max = 60;
+
+        private float posx= 0.45f;
+        private float posy = 0.00f;
+        private float posz = 0.45f;
+
+        private float rotx = 0;
+        private float roty = 180;
+        private float rotz = 0;
 
 
         public int [,] rango_arts = new int[6,2];
         public float [] posiciones_iniciales = new float[6];
+        public float [] posiciones_iniciales_cartesianas = new float[6];
+
+        public List<float> po_ini_art_cart;
+
+        private PUMA_modelo pm_mod = new PUMA_modelo();
 
         public Rangos_arts(){
             rango_arts[0,0] = art1_min;
@@ -48,8 +61,18 @@ namespace RobSof.Assets.Scripts.Interface.Articular
             rango_arts[5,0] = art6_min;
             rango_arts[5,1] = art6_max;
 
+            posiciones_iniciales_cartesianas[0] = posx;
+            posiciones_iniciales_cartesianas[1] = posy;
+            posiciones_iniciales_cartesianas[2] = posz;
+            posiciones_iniciales_cartesianas[3] = rotx;
+            posiciones_iniciales_cartesianas[4] = roty;
+            posiciones_iniciales_cartesianas[5] = rotz;
+            
+            po_ini_art_cart = pm_mod.mgi_puma(posx, posy, posz, rotx, roty, rotz);
+             
+
             for (int j=0; j<6; j++){
-                posiciones_iniciales[j] = 0;//(rango_arts[j, 1]+rango_arts[j, 0])/2;
+                posiciones_iniciales[j] = (rango_arts[j, 1]+rango_arts[j, 0])/2;
             }
         }
     }
