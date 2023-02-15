@@ -169,18 +169,23 @@ public class Adaptador_art_puma : MonoBehaviour
         }
 
         // Se retornan "NUMERO DE ARICULACIONES" trayectorias
-        List<List<float>> trayectoria = tray.tray_articular(pos_inicial, pos_final, 4, NUMERO_ARTICULACIONES);
+        var trayectoria = tray.tray_articular(pos_inicial, pos_final, 4, NUMERO_ARTICULACIONES);
 
         // Se inicializa la corrutina
-        StartCoroutine(mover_robot(trayectoria));
+        StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
     }
 
-    IEnumerator mover_robot(List<List<float>> tray){
+    IEnumerator mover_robot(List<List<float>> tray, List<List<float>> tc){
         for (int i=0; i<tray[0].Count; i++ ){
             for (int j=0; j<NUMERO_ARTICULACIONES; j++){
                 PUMA_script.rotar_articulación(j, tray[j][i]);
+                // Actualización Posiciones Articulares
                 Posiciones_robot.POS_ART[j]= tray[j][i];
                 Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
+
+                // Actualización Posiciones Cartesianas
+                Posiciones_robot.POS_CAR[j] = tc[j][i];
+                Posiciones_robot.pos_car[j].text = tc[j][i].ToString("0.##");
             } 
             Thread.Sleep(TIEMPO_MUESTREO);
             yield return 0;   

@@ -176,17 +176,6 @@ public class Adaptador_car_puma : MonoBehaviour
             yield return 0;   
         }
     }
-    IEnumerator mover_robot1(List<List<float>> tray){
-        for (int i=0; i<tray[0].Count; i++ ){
-            for (int j=0; j<6; j++){
-                PUMA_script.rotar_articulación(j, tray[j][i]);
-                Posiciones_robot.POS_ART[j]= tray[j][i];
-                Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
-            } 
-            Thread.Sleep(TIEMPO_MUESTREO);
-            yield return 0;   
-        }
-    }
 
     void v_Po(){
         float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
@@ -196,8 +185,8 @@ public class Adaptador_car_puma : MonoBehaviour
             pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
         }
         
-        List<List<float>> tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
-        StartCoroutine(mover_robot1(tray_));
+        var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
+        StartCoroutine(mover_robot(tray_.Item1, tray_.Item2));
     }
 
     void activar_desactivar_toggle(GameObject art_vals, bool interactable){

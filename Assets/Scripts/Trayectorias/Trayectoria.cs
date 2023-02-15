@@ -21,15 +21,23 @@ public class Trayectoria
         return tray;
     }
 
-    public List<List<float>> tray_articular(float [] pos_inicial, float [] pos_final, int T_FINAL, int num_arts){
+    public (List<List<float>>, List<List<float>>) tray_articular(float [] pos_inicial, float [] pos_final, int T_FINAL, int num_arts){
         List<List<float>> tray = new List<List<float>>();
+        List<List<float>> tray_car = new List<List<float>>();
         for (int j=0; j<num_arts; j++){
             tray.Add(grado_5(pos_inicial[j], pos_final[j], T_FINAL));
         }
-        return  tray;
+        for (int i=0; i<tray[0].Count; i++){
+            float [] tc = new float[num_arts];
+            for (int j=0; j<num_arts; j++){
+                tc[j] =  tray[j][i];
+            }
+            tray_car.Add(puma_modelo.mgd_puma(tc));
+        }
+        return  (tray, Transpuesta(tray_car));
     }
     public (List<List<float>>, List<List<float>>)tray_cartesiana(float [] pos_inicial, float [] pos_final, int T_FINAL, int num_arts){
-        List<List<float>> tray = new List<List<float>>(); // tray articular
+        List<List<float>> tray;
         List<List<float>> tc = new List<List<float>>(); // tray cartesiana
         List<List<float>> tt = new List<List<float>>(); // tray articular transpuesta
 
@@ -43,6 +51,18 @@ public class Trayectoria
         }
 
         // Transponer Matriz tt
+        tray = Transpuesta(tt);
+
+        // para retornar los ultimos valores de la trayectoria cartesiana
+        int end = tc[0].Count-1;
+        List<float> final_tc = new List<float>() {tc[0][end], tc[1][end],tc[2][end], 
+                                                    tc[3][end],tc[4][end], tc[5][end]};
+
+        return (tray, tc);
+    }
+
+    private List<List<float>> Transpuesta(List<List<float>> tt){
+        List<List<float>> tray = new List<List<float>>();
         for (int i =0; i<tt[0].Count;i++){
             List<float> _tray = new List<float>();
             for (int j=0; j<tt.Count; j++){
@@ -50,12 +70,7 @@ public class Trayectoria
             }
             tray.Add(_tray);
         }
-        // para retornar los ultimos valores de la trayectoria cartesiana
-        int end = tc[0].Count-1;
-        List<float> final_tc = new List<float>() {tc[0][end], tc[1][end],tc[2][end], 
-                                                    tc[3][end],tc[4][end], tc[5][end]};
-
-        return (tray, tc);
+        return tray;
     }
     
 }
