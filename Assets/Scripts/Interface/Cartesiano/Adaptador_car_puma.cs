@@ -55,7 +55,7 @@ public class Adaptador_car_puma : MonoBehaviour
 
         for(int i=0; i<6; i++){
             this.input_tray_cart[i] = input_tray.Find("cart_"+(i+1)).GetComponent<TMP_InputField>();
-            this.input_tray_cart[i].text = "" + Posiciones_robot.POS_CAR[i];
+            this.input_tray_cart[i].text = "" + rangos_arts.posiciones_iniciales_cartesianas[i];
         }
 
         // Agregar primer elemento tray a la lista array_val _cart
@@ -160,6 +160,17 @@ public class Adaptador_car_puma : MonoBehaviour
         StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
     }
 
+    void v_Po(){
+        float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
+
+        for (int i=0; i<6; i++){
+            input_tray_cart[i].text = rangos_arts.posiciones_iniciales_cartesianas[i].ToString("0.##");
+            pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
+        }
+        
+        var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
+        StartCoroutine(mover_robot(tray_.Item1, tray_.Item2));
+    }
     IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
         for (int i=0; i<tray[0].Count; i++ ){
             for (int j=0; j<6; j++){
@@ -175,18 +186,6 @@ public class Adaptador_car_puma : MonoBehaviour
             Thread.Sleep(TIEMPO_MUESTREO);
             yield return 0;   
         }
-    }
-
-    void v_Po(){
-        float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
-
-        for (int i=0; i<6; i++){
-            input_tray_cart[i].text = ""+rangos_arts.posiciones_iniciales_cartesianas[i].ToString("0.##");
-            pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
-        }
-        
-        var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
-        StartCoroutine(mover_robot(tray_.Item1, tray_.Item2));
     }
 
     void activar_desactivar_toggle(GameObject art_vals, bool interactable){

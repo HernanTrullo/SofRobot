@@ -49,6 +49,24 @@ public class PUMA_modelo
         return new List<float> {xa, ya, za, angles[0], angles[1], angles[2]};
         
     }
+    public float [] rotm2euler(Matrix4x4 rotm){
+        Vector3 angles = new Vector3();
+        float threshold = 0.9999f;
+
+        angles.y = Mathf.Asin(rotm.m20);
+        // Checheo del gimbal lock
+        if (Mathf.Abs(rotm.m20) > threshold){
+            angles.x = (float)Mathf.Atan2(rotm.m01, rotm.m02);
+            angles.z = 0.0f;
+        }
+        else{
+            angles.x = (float)Mathf.Atan2(-rotm.m21, rotm.m22);
+            angles.z = (float)Mathf.Atan2(-rotm.m10, rotm.m00);
+        }
+        Vector3 angles_grados = angles*Mathf.Rad2Deg;
+
+        return new float[] {angles_grados.x, angles_grados.y, angles_grados.z};
+    }
 
     public List<float> mgi_puma(float posx, float posy, float posz, float rotx, float roty, float rotz){
         Matrix4x4 Mrot = euler2rotm(rotx, roty, rotz);
@@ -105,6 +123,7 @@ public class PUMA_modelo
         float Hz = Seno(q1)*ax - Coseno(q1)*ay;
 
         float q4 = Mathf.Atan2(Hz,-Hx);
+        
         //%q4 = Mathf.Atan2(Hz,-Hx) + pi;
 
         //Calculo de q5:
@@ -113,7 +132,6 @@ public class PUMA_modelo
         float C5 = Hy;
 
         float q5 = Mathf.Atan2(S5,C5);
-
         //Calculo de q6:
 
         float Fx = Coseno(q2 + q3)*(Coseno(q1)*sx + Seno(q1)*sy) + Seno(q2 + q3)*sz;
@@ -125,42 +143,20 @@ public class PUMA_modelo
         float C6 = -Coseno(q4)*Gz - Seno(q4)*Gx;
 
         float q6 = Mathf.Atan2(S6,C6);
+        if (q4<0){
+            q4 = 2*Mathf.PI+q4;
+        }
+        if (q5<0){
+            q5 = 2*Mathf.PI+q5;
+        }
+        if (q6<0){
+            q6 = 2*Mathf.PI+q6;
+        }
 
         return new List<float> {q1, q2, q3, q4, q5, q6};
     }
 
-
-    public float [] rotm2euler(Matrix4x4 rotm, bool f){
-
-        Quaternion rotation = Quaternion.LookRotation(rotm.GetColumn(1), rotm.GetColumn(2));
-        Vector3 euler_angles = rotation.eulerAngles;
-
-        if (euler_angles.x >= 90.0f && euler_angles.x <= 270.0f){
-            euler_angles.y = 180.0f - euler_angles.y;
-            euler_angles.z = 180.0f - euler_angles.z;
-        }
     
-        return new float [] {euler_angles.x, euler_angles.y, euler_angles.z};
-    }
-
-    public float [] rotm2euler(Matrix4x4 rotm){
-        Vector3 angles = new Vector3();
-        float threshold = 0.9999f;
-
-        angles.y = Mathf.Asin(rotm.m20);
-        // Checheo del gimbal lock
-        if (Mathf.Abs(rotm.m20) > threshold){
-            angles.x = (float)Mathf.Atan2(rotm.m01, rotm.m02);
-            angles.z = 0.0f;
-        }
-        else{
-            angles.x = (float)Mathf.Atan2(-rotm.m21, rotm.m22);
-            angles.z = (float)Mathf.Atan2(-rotm.m10, rotm.m00);
-        }
-        Vector3 angles_grados = angles*Mathf.Rad2Deg;
-
-        return new float[] {angles.x, angles.y, angles.z};
-    }
 
     public Matrix4x4 euler2rotm(float rotx, float roty, float rotz){
         Quaternion rotation = Quaternion.Euler(rotx, roty, rotz);

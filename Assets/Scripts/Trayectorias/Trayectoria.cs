@@ -28,13 +28,13 @@ public class Trayectoria
             tray.Add(grado_5(pos_inicial[j], pos_final[j], T_FINAL));
         }
         for (int i=0; i<tray[0].Count; i++){
-            float [] tc = new float[num_arts];
+            float [] tart = new float[num_arts];
             for (int j=0; j<num_arts; j++){
-                tc[j] =  tray[j][i];
+                tart[j] =  tray[j][i]*Mathf.Deg2Rad;
             }
-            tray_car.Add(puma_modelo.mgd_puma(tc));
+            tray_car.Add(puma_modelo.mgd_puma(tart)); // Angulos en radianes
         }
-        return  (tray, Transpuesta(tray_car));
+        return  (tray, Transpuesta(tray_car, true));
     }
     public (List<List<float>>, List<List<float>>)tray_cartesiana(float [] pos_inicial, float [] pos_final, int T_FINAL, int num_arts){
         List<List<float>> tray;
@@ -67,6 +67,17 @@ public class Trayectoria
             List<float> _tray = new List<float>();
             for (int j=0; j<tt.Count; j++){
                 _tray.Add(tt[j][i]*Mathf.Rad2Deg);
+            }
+            tray.Add(_tray);
+        }
+        return tray;
+    }
+    private List<List<float>> Transpuesta(List<List<float>> tt, bool bol){
+        List<List<float>> tray = new List<List<float>>();
+        for (int i =0; i<tt[0].Count;i++){
+            List<float> _tray = new List<float>();
+            for (int j=0; j<tt.Count; j++){
+                _tray.Add(tt[j][i]);
             }
             tray.Add(_tray);
         }

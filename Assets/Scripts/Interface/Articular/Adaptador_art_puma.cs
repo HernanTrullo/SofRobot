@@ -18,6 +18,7 @@ public class Adaptador_art_puma : MonoBehaviour
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
     public Button btn_probar;           // Boton para probar una taryectoria en los sliders
     public Button btn_Q0;               // Boton para llevar el robot a la posicion inicial
+    public Button btn_cargar;           // Btoton para cargar trayectorias del scroll view
 
     public GameObject PUMA_gemelo;       // gemelo digital
     public RectTransform content_posiciones; // Posiciones articulares
@@ -45,6 +46,9 @@ public class Adaptador_art_puma : MonoBehaviour
     // Llamada a la clase trayectoria
     private Trayectoria tray = new Trayectoria();
     private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
+
+    // Tiempo de la trayectoria
+    private int TIEMPO_TRAYECTORIA = 3;
     // Start is called before the first frame update
     void Start()
     {
@@ -60,12 +64,16 @@ public class Adaptador_art_puma : MonoBehaviour
         // Desactivar el checkbox del primer objeto
         array_val_arts.Add(val_arts);
         this.activar_desactivar_toggle(array_val_arts[0], false);
+        for (int i=0; i<NUMERO_ARTICULACIONES; i++){
+            agregar_valores_tray(array_val_arts[0],"val_art"+(i+1), rangos_arts.posiciones_iniciales[i]); 
+        }
 
         // Se coloca el boton a la escucha
         btn_agregar.onClick.AddListener(agregar);
         btn_eliminar.onClick.AddListener(eliminar);
         btn_probar.onClick.AddListener(probar);
         btn_Q0.onClick.AddListener(v_Qo);
+        btn_cargar.onClick.AddListener(cargar);
 
         // Inicialización de la posición inicia del prefab
         pos_prefab = val_arts.transform.localPosition;
@@ -136,9 +144,9 @@ public class Adaptador_art_puma : MonoBehaviour
                 index ++;
             }
 
+            // Se reorganizan los indices para eliminarlos
             index_a_elim.Sort();
             index_a_elim.Reverse();
-
             foreach(int index_ in index_a_elim){
                 Destroy(array_val_arts[index_]);
                 array_val_arts.RemoveAt(index_);
@@ -151,7 +159,8 @@ public class Adaptador_art_puma : MonoBehaviour
                 pos_prefab.y = -20*(i+1);
                 array_val_arts[i].transform.localPosition = pos_prefab;
             }
-
+            
+            // Se actualiza el content de las trayectorias
             dim_content.y = 50+20*(num_val_arts-1);
             content_trays.sizeDelta  = dim_content;
         }
@@ -169,7 +178,7 @@ public class Adaptador_art_puma : MonoBehaviour
         }
 
         // Se retornan "NUMERO DE ARICULACIONES" trayectorias
-        var trayectoria = tray.tray_articular(pos_inicial, pos_final, 4, NUMERO_ARTICULACIONES);
+        var trayectoria = tray.tray_articular(pos_inicial, pos_final, TIEMPO_TRAYECTORIA, NUMERO_ARTICULACIONES);
 
         // Se inicializa la corrutina
         StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
@@ -191,12 +200,59 @@ public class Adaptador_art_puma : MonoBehaviour
             yield return 0;   
         }
     }
+    IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
+        for (int k=0; k<tray.Count; k++){ // el de las trayectorias
+            for (int i=0; i<tray[0][0].Count; i++ ){
+                for (int j=0; j<tray[0].Count; j++){
+                    PUMA_script.rotar_articulación(j, tray[k][j][i]);
+                    // Actualización Posiciones Articulares
+                    Posiciones_robot.POS_ART[j]= tray[k][j][i];
+                    Posiciones_robot.pos_art[j].text = tray[k][j][i].ToString("0.##");
+
+                    // Actualización Posiciones Cartesianas
+                    Posiciones_robot.POS_CAR[j] = tc[k][j][i];
+                    Posiciones_robot.pos_car[j].text = tc[k][j][i].ToString("0.##");
+                } 
+                Thread.Sleep(TIEMPO_MUESTREO);
+            yield return 0;   
+        }
+        }
+
+    }
 
     void v_Qo(){
         for (int j=0; j<NUMERO_ARTICULACIONES; j++){
             script_slider[j].set_value(""+rangos_arts.posiciones_iniciales[j].ToString("0.##"));
         }
         probar();
+    }
+
+    void cargar(){
+        List<List<float>> values = new List<List<float>>();
+
+        // Se agregan los valores en donde esta el robot actualmente
+        values.Add(Posiciones_robot.POS_ART);
+
+        // Se obtienen los valores de cada movimiento
+        for(int i=0; i<num_val_arts; i++){
+            List<float> _value = new List<float>();
+            for (int j=0; j<NUMERO_ARTICULACIONES; j++){
+                _value.Add(obtener_valores_tray(array_val_arts[i], "val_art"+(j+1)));
+            }
+            values.Add(_value);
+        }
+        // Se obtienen las trayectorias
+        List<List<List<float>>> tray_gen = new List<List<List<float>>>();
+        List<List<List<float>>> tray_gen_car = new List<List<List<float>>>();
+
+        for (int i=0; i<values.Count-1; i++){
+            var TRAY = tray.tray_articular(values[i].ToArray(), values[i+1].ToArray(), TIEMPO_TRAYECTORIA, NUMERO_ARTICULACIONES);
+            tray_gen.Add(TRAY.Item1);
+            tray_gen_car.Add(TRAY.Item2);
+        }
+
+        // Se inicializa la corrutina
+        StartCoroutine(mover_robot_tray(tray_gen, tray_gen_car));
     }
 
     void activar_desactivar_toggle(GameObject art_vals, bool interactable){
@@ -206,5 +262,10 @@ public class Adaptador_art_puma : MonoBehaviour
     void agregar_valores_tray(GameObject arts_vals, string name, float f_value){
         TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
         value.text = f_value.ToString("0.##");
+    }
+
+    float obtener_valores_tray(GameObject arts_vals, string name){
+        TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
+        return float.Parse(value.text);
     }
 }
