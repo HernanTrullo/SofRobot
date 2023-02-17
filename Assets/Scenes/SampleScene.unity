@@ -162,7 +162,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -0.00034036947, y: 0}
+  m_AnchoredPosition: {x: -0.000018518655, y: 0}
   m_SizeDelta: {x: 280, y: 215}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &16304640
@@ -4066,7 +4066,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1326346953}
   m_Direction: 0
   m_Value: 1
-  m_Size: 1
+  m_Size: 0.9999959
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6895,7 +6895,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -0.00034036947, y: 0.00049528625}
+  m_AnchoredPosition: {x: -0.000018518655, y: 0.00021178684}
   m_SizeDelta: {x: 280, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!4 &694107184 stripped
@@ -12888,7 +12888,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1875395688}
   m_Direction: 0
   m_Value: 1
-  m_Size: 1
+  m_Size: 0.9999959
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -14505,6 +14505,7 @@ MonoBehaviour:
   btn_eliminar: {fileID: 903845005}
   btn_probar: {fileID: 1909407617}
   btn_P0: {fileID: 1985799934}
+  btn_cargar: {fileID: 763002829}
   PUMA_gemelo: {fileID: 1235771774}
 --- !u!224 &1550579613 stripped
 RectTransform:

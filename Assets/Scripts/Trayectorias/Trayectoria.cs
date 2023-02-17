@@ -53,11 +53,6 @@ public class Trayectoria
         // Transponer Matriz tt
         tray = Transpuesta(tt);
 
-        // para retornar los ultimos valores de la trayectoria cartesiana
-        int end = tc[0].Count-1;
-        List<float> final_tc = new List<float>() {tc[0][end], tc[1][end],tc[2][end], 
-                                                    tc[3][end],tc[4][end], tc[5][end]};
-
         return (tray, tc);
     }
 

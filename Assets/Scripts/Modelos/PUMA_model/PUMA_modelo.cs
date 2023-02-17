@@ -63,6 +63,7 @@ public class PUMA_modelo
             angles.x = (float)Mathf.Atan2(-rotm.m21, rotm.m22);
             angles.z = (float)Mathf.Atan2(-rotm.m10, rotm.m00);
         }
+
         Vector3 angles_grados = angles*Mathf.Rad2Deg;
 
         return new float[] {angles_grados.x, angles_grados.y, angles_grados.z};

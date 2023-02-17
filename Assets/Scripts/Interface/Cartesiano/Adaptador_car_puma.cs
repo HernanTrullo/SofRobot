@@ -16,6 +16,7 @@ public class Adaptador_car_puma : MonoBehaviour
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
     public Button btn_probar;           // Boton probar trayectoria
     public Button btn_P0;               // Boton para enviar a la posicion (cartesiana) inicial
+    public Button btn_cargar;           // Boton para cargar varias trayectorias
 
     public GameObject PUMA_gemelo;       // gemelo digital
 
@@ -60,6 +61,9 @@ public class Adaptador_car_puma : MonoBehaviour
 
         // Agregar primer elemento tray a la lista array_val _cart
         array_val_cart.Add(val_cart);
+        for (int j=0; j<6; j++){
+            agregar_valores_tray(array_val_cart[0],"val_art"+(j+1), rangos_arts.posiciones_iniciales_cartesianas[j]);
+        }
 
         // Desactivar el toggle del prefab
         this.activar_desactivar_toggle(array_val_cart[0], false);
@@ -69,6 +73,7 @@ public class Adaptador_car_puma : MonoBehaviour
         btn_eliminar.onClick.AddListener(eliminar);
         btn_probar.onClick.AddListener(probar);
         btn_P0.onClick.AddListener(v_Po);
+        btn_cargar.onClick.AddListener(cargar);
 
         // Inicialización de la posición inicia del prefab
         pos_prefab = val_cart.transform.localPosition;
@@ -164,7 +169,6 @@ public class Adaptador_car_puma : MonoBehaviour
         float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
 
         for (int i=0; i<6; i++){
-            input_tray_cart[i].text = rangos_arts.posiciones_iniciales_cartesianas[i].ToString("0.##");
             pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
         }
         
@@ -187,6 +191,53 @@ public class Adaptador_car_puma : MonoBehaviour
             yield return 0;   
         }
     }
+    IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
+        for (int k=0; k<tray.Count; k++){ // el de las trayectorias
+            for (int i=0; i<tray[0][0].Count; i++ ){
+                for (int j=0; j<tray[0].Count; j++){
+                    PUMA_script.rotar_articulación(j, tray[k][j][i]);
+                    // Actualización Posiciones Articulares
+                    Posiciones_robot.POS_ART[j]= tray[k][j][i];
+                    Posiciones_robot.pos_art[j].text = tray[k][j][i].ToString("0.##");
+
+                    // Actualización Posiciones Cartesianas
+                    Posiciones_robot.POS_CAR[j] = tc[k][j][i];
+                    Posiciones_robot.pos_car[j].text = tc[k][j][i].ToString("0.##");
+                } 
+                Thread.Sleep(TIEMPO_MUESTREO);
+            yield return 0;   
+        }
+        }
+
+    }
+
+    void cargar(){
+        List<List<float>> values = new List<List<float>>();
+
+        // Se agregan los valores en donde esta el robot actualmente
+        values.Add(Posiciones_robot.POS_CAR);
+
+        // Se obtienen los valores de cada movimiento
+        for(int i=0; i<num_val_cart; i++){
+            List<float> _value = new List<float>();
+            for (int j=0; j<6; j++){
+                _value.Add(obtener_valores_tray(array_val_cart[i], "val_art"+(j+1)));
+            }
+            values.Add(_value);
+        }
+        // Se obtienen las trayectorias
+        List<List<List<float>>> tray_gen = new List<List<List<float>>>();
+        List<List<List<float>>> tray_gen_car = new List<List<List<float>>>();
+
+        for (int i=0; i<values.Count-1; i++){
+            var TRAY = tray.tray_cartesiana(values[i].ToArray(), values[i+1].ToArray(), TIEMPO_TRAYECTORIA, 6);
+            tray_gen.Add(TRAY.Item1);
+            tray_gen_car.Add(TRAY.Item2);
+        }
+
+        // Se inicializa la corrutina
+        StartCoroutine(mover_robot_tray(tray_gen, tray_gen_car));
+    }
 
     void activar_desactivar_toggle(GameObject art_vals, bool interactable){
         Toggle status = art_vals.transform.Find("Toggle").GetComponent<Toggle>();
@@ -195,5 +246,9 @@ public class Adaptador_car_puma : MonoBehaviour
     void agregar_valores_tray(GameObject arts_vals, string name, float f_value){
         TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
         value.text = f_value.ToString("0.##");
+    }
+    float obtener_valores_tray(GameObject arts_vals, string name){
+        TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
+        return float.Parse(value.text);
     }
 }
