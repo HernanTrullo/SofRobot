@@ -98,10 +98,10 @@ public class Adaptador_car_puma : MonoBehaviour
             array_val_cart[num_val_cart].transform.name = "val_arts"+num_val_cart;
 
             // Ampliación del content
-            dim_content.y +=20;
+            dim_content.y +=30;
             content_tray.sizeDelta  = dim_content;
 
-            pos_prefab.y = -20*(num_val_cart+1);
+            pos_prefab.y = -30*(num_val_cart+1);
             array_val_cart[num_val_cart].transform.localPosition = pos_prefab;
 
             // Activar el toggle o checkbox
@@ -134,18 +134,19 @@ public class Adaptador_car_puma : MonoBehaviour
             foreach(int index_ in index_a_elim){
                 Destroy(array_val_cart[index_]);
                 array_val_cart.RemoveAt(index_);
+
+                dim_content.y -=30;
+                content_tray.sizeDelta  = dim_content;
+
                 num_val_cart --;
             }
 
             // Actualizar los prefab a las posiciones normales y sus respectivos nombres
             for (int i=1; i<num_val_cart;i++ ){
                 array_val_cart[i].transform.name = "val_arts"+i;
-                pos_prefab.y = -20*(i+1);
+                pos_prefab.y = -30*(i+1);
                 array_val_cart[i].transform.localPosition = pos_prefab;
             }
-
-            dim_content.y = 50+20*(num_val_cart-1);
-            content_tray.sizeDelta  = dim_content;
         }
     }
     void probar(){

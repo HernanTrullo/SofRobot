@@ -115,10 +115,10 @@ public class Adaptador_art_puma : MonoBehaviour
             array_val_arts[num_val_arts].transform.name = "val_arts"+num_val_arts;
 
             // Ampliación del content
-            dim_content.y +=20;
+            dim_content.y +=30;
             content_trays.sizeDelta  = dim_content;
 
-            pos_prefab.y = -20*(num_val_arts+1);
+            pos_prefab.y = -30*(num_val_arts+1);
             array_val_arts[num_val_arts].transform.localPosition = pos_prefab;
 
             // Activar el toggle o checkbox
@@ -150,19 +150,20 @@ public class Adaptador_art_puma : MonoBehaviour
             foreach(int index_ in index_a_elim){
                 Destroy(array_val_arts[index_]);
                 array_val_arts.RemoveAt(index_);
+                
+                dim_content.y -=30;
+                content_trays.sizeDelta  = dim_content;
+
                 num_val_arts --;
             }
 
             // Actualizar los prefab a las posiciones normales y sus respectivos nombres
             for (int i=1; i<num_val_arts;i++ ){
                 array_val_arts[i].transform.name = "val_arts"+i;
-                pos_prefab.y = -20*(i+1);
+                pos_prefab.y = -30*(i+1);
                 array_val_arts[i].transform.localPosition = pos_prefab;
             }
             
-            // Se actualiza el content de las trayectorias
-            dim_content.y = 50+20*(num_val_arts-1);
-            content_trays.sizeDelta  = dim_content;
         }
     }
 
