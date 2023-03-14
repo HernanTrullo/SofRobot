@@ -18,4 +18,17 @@ public static class Acceso_Datos
         TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
         return float.Parse(value.text);
     }
+    public static List<List<float>> return_values_tray(List<GameObject> array_val_arts){
+        List<List<float>> values = new List<List<float>>();
+        // Se obtienen los valores de cada movimiento
+        for(int i=0; i<array_val_arts.Count; i++){
+            List<float> _value = new List<float>();
+            for (int j=0; j<6; j++){
+                // Se coloca i+1 debido a que la trayectoria inicial siempre se manetiene
+                _value.Add(obtener_valores_tray(array_val_arts[i], "val_art"+(j+1)));
+            }
+            values.Add(_value);
+        }
+        return values;
+    }
 }

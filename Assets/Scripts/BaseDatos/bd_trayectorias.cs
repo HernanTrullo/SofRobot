@@ -2,30 +2,40 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
 [System.Serializable]
-public class Tray_bd{
-    public List<string> nombre_tray;
-    public List<List<List<float>>> tray_point; 
+public class Tray_BD{
+    public List<List<float>> tray = new List<List<float>>();
+    public string nombre_tray = "";
+    public string descripcion = "";
 }
+
+[System.Serializable]
+public class TRAY_BD{
+    public List<Tray_BD> tray_bd = new List<Tray_BD>();
+}
+
 
 public static class bd_trayectorias
 {
+    // Atributo global que se encarga de guardar temporalmente las trayectorias
+    public static List<List<float>> TRAY_SCROLL_VIEW;
+
     private const string nombre_archivo = "nombre_tray.json";
 
-    public static void guardar_nombre_tray(){
+    public static void guardar_tray(TRAY_BD tray_bd){
         
+        string json_data = JsonConvert.SerializeObject(tray_bd, Formatting.Indented);
+        File.WriteAllText(nombre_archivo, json_data); 
     }
-    public static void guardar_tray(Tray_bd tray_bd){
-        string json_data = JsonUtility.ToJson(tray_bd);
-        File.WriteAllText(nombre_archivo, json_data);
-    }
-    public static Tray_bd cargar_tray(){
+    public static TRAY_BD cargar_tray(){
         if (!File.Exists(nombre_archivo)){
             return null;
         }
         string json_data = File.ReadAllText(nombre_archivo);
-        return JsonUtility.FromJson<Tray_bd>(json_data);
+        return JsonConvert.DeserializeObject<TRAY_BD>(json_data);
     }
 }

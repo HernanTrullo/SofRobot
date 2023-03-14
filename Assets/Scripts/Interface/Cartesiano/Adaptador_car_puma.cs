@@ -62,11 +62,11 @@ public class Adaptador_car_puma : MonoBehaviour
         // Agregar primer elemento tray a la lista array_val _cart
         array_val_cart.Add(val_cart);
         for (int j=0; j<6; j++){
-            agregar_valores_tray(array_val_cart[0],"val_art"+(j+1), rangos_arts.posiciones_iniciales_cartesianas[j]);
+            Acceso_Datos.agregar_valores_tray(array_val_cart[0],"val_art"+(j+1), rangos_arts.posiciones_iniciales_cartesianas[j]);
         }
 
         // Desactivar el toggle del prefab
-        this.activar_desactivar_toggle(array_val_cart[0], false);
+        Acceso_Datos.activar_desactivar_toggle(array_val_cart[0], false);
 
         // Botones a la escucha
         btn_agregar.onClick.AddListener(agregar);
@@ -105,12 +105,12 @@ public class Adaptador_car_puma : MonoBehaviour
             array_val_cart[num_val_cart].transform.localPosition = pos_prefab;
 
             // Activar el toggle o checkbox
-            this.activar_desactivar_toggle(array_val_cart[num_val_cart], true);
+            Acceso_Datos.activar_desactivar_toggle(array_val_cart[num_val_cart], true);
             
             
             // Agregación del los valores a las trayectorias
             for (int i=0; i<6; i++){
-                agregar_valores_tray(array_val_cart[num_val_cart],"val_art"+(i+1), 
+                Acceso_Datos.agregar_valores_tray(array_val_cart[num_val_cart],"val_art"+(i+1), 
                 float.Parse(input_tray_cart[i].text)); 
             }
             num_val_cart ++;
@@ -222,7 +222,7 @@ public class Adaptador_car_puma : MonoBehaviour
         for(int i=0; i<num_val_cart; i++){
             List<float> _value = new List<float>();
             for (int j=0; j<6; j++){
-                _value.Add(obtener_valores_tray(array_val_cart[i], "val_art"+(j+1)));
+                _value.Add(Acceso_Datos.obtener_valores_tray(array_val_cart[i], "val_art"+(j+1)));
             }
             values.Add(_value);
         }
@@ -238,18 +238,5 @@ public class Adaptador_car_puma : MonoBehaviour
 
         // Se inicializa la corrutina
         StartCoroutine(mover_robot_tray(tray_gen, tray_gen_car));
-    }
-
-    void activar_desactivar_toggle(GameObject art_vals, bool interactable){
-        Toggle status = art_vals.transform.Find("Toggle").GetComponent<Toggle>();
-        status.interactable = interactable;
-    }
-    void agregar_valores_tray(GameObject arts_vals, string name, float f_value){
-        TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
-        value.text = f_value.ToString("0.##");
-    }
-    float obtener_valores_tray(GameObject arts_vals, string name){
-        TextMeshProUGUI value = arts_vals.transform.Find(name).GetComponent<TextMeshProUGUI>();
-        return float.Parse(value.text);
     }
 }
