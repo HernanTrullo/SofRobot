@@ -8,8 +8,7 @@ using System.Threading;
 
 public class Adaptador_art_puma : MonoBehaviour
 {
-    
-    public RectTransform content_trays;      // El ambiente content del scroll_trays view
+    public RectTransform scroll_view;
     public RectTransform content_arts;       // El ambiente content del scrol_arts view
     public GameObject val_arts;       // El prebaf de las trayectorias articulares
     
@@ -22,12 +21,13 @@ public class Adaptador_art_puma : MonoBehaviour
 
 
     public GameObject PUMA_gemelo;       // gemelo digital
-    public RectTransform content_posiciones; // Posiciones articulares
 
     // Cuadros de dialogo
     public RectTransform cuadro_dialogo_subir;
     public RectTransform cuadro_dialogo_bajar;
 
+    // Script que maneja el scroll view de las trayectorias
+    private Scroll_view_tray scrol_view_tray;
     // Script que maneja el gemelo digital
     private Gemelo_digital PUMA_script;
 
@@ -38,21 +38,10 @@ public class Adaptador_art_puma : MonoBehaviour
     private Transform [] sliders;
     private Slider_art[] script_slider;
 
-    private Rangos_arts rangos_arts = new Rangos_arts();
-
-    private List<GameObject> array_val_arts;
-    private int num_max_val_arts = 100;
-    private int num_val_arts = 1;
-
-    // Posicion del prefab y aplicación del content
-    private Vector3 pos_prefab;
-    private Vector2 dim_content;
-    private float dim_content_y; 
-
     // Llamada a la clase trayectoria
     private Trayectoria tray = new Trayectoria();
     private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
-
+    private Rangos_arts rangos_arts = new Rangos_arts();
     // Tiempo de la trayectoria
     private int TIEMPO_TRAYECTORIA = 3;
     // Start is called before the first frame update
@@ -63,16 +52,6 @@ public class Adaptador_art_puma : MonoBehaviour
 
         // Se instancia el script que maneja el gameObject (PUMA) 
         PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
-
-        // Se instancia la lista de los prebab de las trayectorias
-        array_val_arts = new List<GameObject>();
-
-        // Desactivar el checkbox del primer objeto
-        array_val_arts.Add(val_arts);
-        Acceso_Datos.activar_desactivar_toggle(array_val_arts[0], false);
-        for (int i=0; i<NUMERO_ARTICULACIONES; i++){
-            Acceso_Datos.agregar_valores_tray(array_val_arts[0],"val_art"+(i+1), rangos_arts.posiciones_iniciales[i]); 
-        }
 
         // Se coloca el boton a la escucha
         btn_agregar.onClick.AddListener(agregar);
@@ -88,11 +67,6 @@ public class Adaptador_art_puma : MonoBehaviour
         cuadro_dialogo_bajar.transform.GetComponent<Cuadro_dialogo>().btn_si_click_event.AddListener(
             bajar
         );
-
-        // Inicialización de la posición inicia del prefab
-        pos_prefab = val_arts.transform.localPosition;
-        dim_content = content_trays.sizeDelta;
-        dim_content_y = content_trays.sizeDelta.y;
         
         // Inicialización de los sliders, gemelo, taryectoias
         for (int i = 0; i<NUMERO_ARTICULACIONES; i++){
@@ -109,14 +83,11 @@ public class Adaptador_art_puma : MonoBehaviour
 
             // Gemelo digital
             PUMA_script.rotar_articulación(i, rangos_arts.posiciones_iniciales[i]);
-
         }
-    }
-
-    void funciones_de_prueba(List<float> array){
-        for(int j=0; j<array.Count; j++){
-            Debug.Log(""+array[j]);
-        }
+        
+        // Se obtiene el script que maneja el scroll view internamente
+        scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
+        scrol_view_tray.inicializar_posiciones(rangos_arts.posiciones_iniciales);
     }
     // Update is called once per frame
     void Update()
@@ -125,90 +96,17 @@ public class Adaptador_art_puma : MonoBehaviour
     }
 
     void agregar(){
-        if (num_val_arts < num_max_val_arts){
-            array_val_arts.Add(Instantiate(val_arts, content_trays, false));
-            array_val_arts[num_val_arts].transform.name = "val_arts"+num_val_arts;
-
-            // Ampliación del content
-            dim_content.y +=30;
-            content_trays.sizeDelta  = dim_content;
-
-            pos_prefab.y = -30*(num_val_arts+1);
-            array_val_arts[num_val_arts].transform.localPosition = pos_prefab;
-
-            // Activar el toggle o checkbox
-            Acceso_Datos.activar_desactivar_toggle(array_val_arts[num_val_arts], true);
-            
-            
-            // Agregación del los valores a las trayectorias
-            for (int i=0; i<6; i++){
-                Acceso_Datos.agregar_valores_tray(array_val_arts[num_val_arts],"val_art"+(i+1), script_slider[i].get_value()); 
-            }
-            num_val_arts ++;
+       // Retornar los valored de los slider
+       List<float> values = new List<float>();
+       foreach(Slider_art slider in script_slider){
+            values.Add(slider.get_value());
         }
-    }
+        // Se llama al método agregar del scrollview
+        scrol_view_tray.agregar(values);
 
-    void agregar(List<List<float>> tray){
-        this.num_val_arts = 1;
-        for(int index_= array_val_arts.Count-1; index_>0; index_--){
-            Destroy(array_val_arts[index_]);
-            array_val_arts.RemoveAt(index_);
-        }
-        for (int num_val_arts = 1; num_val_arts<tray.Count; num_val_arts++){
-            array_val_arts.Add(Instantiate(val_arts, content_trays, false));
-            array_val_arts[num_val_arts].transform.name = "val_arts"+num_val_arts;
-
-            pos_prefab.y = -30*(num_val_arts+1);
-            array_val_arts[num_val_arts].transform.localPosition = pos_prefab;
-
-            // Activar el toggle o checkbox
-            Acceso_Datos.activar_desactivar_toggle(array_val_arts[num_val_arts], true);
-            this.num_val_arts ++;
-        }
-        // Agregación del los valores a las trayectorias
-        for (int num_val_arts = 1; num_val_arts<tray.Count; num_val_arts++){
-            for (int i=0; i<6; i++){
-                Acceso_Datos.agregar_valores_tray(array_val_arts[num_val_arts],"val_art"+(i+1), tray[num_val_arts][i]); 
-            }
-        }
-
-        // Ampliación del content
-        dim_content.y = dim_content_y + 30*(tray.Count-1);
-        content_trays.sizeDelta  = dim_content;
     }
     void eliminar(){
-       if (num_val_arts > 1){
-            List<int> index_a_elim = new List<int>();
-            int index = 0;
-            foreach (GameObject val_art in array_val_arts){
-                Toggle status = val_art.transform.Find("Toggle").GetComponent<Toggle>();
-                if (status.isOn){
-                    index_a_elim.Add(index);
-                }
-                index ++;
-            }
-
-            // Se reorganizan los indices para eliminarlos
-            index_a_elim.Sort();
-            index_a_elim.Reverse();
-            foreach(int index_ in index_a_elim){
-                Destroy(array_val_arts[index_]);
-                array_val_arts.RemoveAt(index_);
-                
-                dim_content.y -=30;
-                content_trays.sizeDelta  = dim_content;
-
-                num_val_arts --;
-            }
-
-            // Actualizar los prefab a las posiciones normales y sus respectivos nombres
-            for (int i=1; i<num_val_arts;i++ ){
-                array_val_arts[i].transform.name = "val_arts"+i;
-                pos_prefab.y = -30*(i+1);
-                array_val_arts[i].transform.localPosition = pos_prefab;
-            }
-            
-        }
+       scrol_view_tray.eliminar();
     }
 
     void probar (){
@@ -279,7 +177,8 @@ public class Adaptador_art_puma : MonoBehaviour
         values.Add(Posiciones_robot.POS_ART);
 
         // Se obtienen los valores de cada movimiento
-        for(int i=0; i<num_val_arts; i++){
+        List<GameObject> array_val_arts = scrol_view_tray.get_array_val_arts();
+        for(int i=0; i<array_val_arts.Count; i++){
             List<float> _value = new List<float>();
             for (int j=0; j<NUMERO_ARTICULACIONES; j++){
                 _value.Add(Acceso_Datos.obtener_valores_tray(array_val_arts[i], "val_art"+(j+1)));
@@ -301,10 +200,10 @@ public class Adaptador_art_puma : MonoBehaviour
     }
 
     void subir(){
-        bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(array_val_arts);
+        bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());
     }
 
     void bajar(){
-        agregar(bd_trayectorias.TRAY_SCROLL_VIEW);
+        scrol_view_tray.agregar(bd_trayectorias.TRAY_SCROLL_VIEW);
     }
 }

@@ -8,9 +8,8 @@ using RobSof.Assets.Scripts.Interface.Articular;
 
 public class Adaptador_car_puma : MonoBehaviour
 {
-    public RectTransform content_tray;      // Contiene las trayectorias agregadas
+    public RectTransform scroll_view;      // Contiene las trayectorias agregadas
     public RectTransform input_tray;        // Contiene los input de cas trayectorias
-    public GameObject val_cart;         // Contiene cada valor asignado de las trayectorias
 
     public Button btn_agregar;          // Boton agregar
     public Button btn_eliminar;         // Boton para eliminar una trayectoria
@@ -22,19 +21,12 @@ public class Adaptador_car_puma : MonoBehaviour
 
     private TMP_InputField [] input_tray_cart = new TMP_InputField[6];
 
-    private List<GameObject> array_val_cart = new List<GameObject>();  // Lista de las trayectorias agregadas
-    private int num_max_val_cart = 100;       // Número maximo de trayectorias
-    private int num_val_cart = 1;             // Cantidad inicial 
-
-
-    // Posicion del prefab y aplicación del content
-    private Vector3 pos_prefab;
-    private Vector2 dim_content;
-
     // Clase trayectoria
     Trayectoria tray = new Trayectoria();
     private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
 
+    // Script que maneja el scroll view de las trayectorias
+    private Scroll_view_tray scrol_view_tray;
 
     // Script que maneja el gemelo digital
     private Gemelo_digital PUMA_script;
@@ -52,22 +44,10 @@ public class Adaptador_car_puma : MonoBehaviour
     {
         // Se instancia el script que maneja el gameObject (PUMA) 
         PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
-
-
         for(int i=0; i<6; i++){
-            this.input_tray_cart[i] = input_tray.Find("cart_"+(i+1)).GetComponent<TMP_InputField>();
-            this.input_tray_cart[i].text = "" + rangos_arts.posiciones_iniciales_cartesianas[i];
+            input_tray_cart[i] = input_tray.Find("cart_"+(i+1)).GetComponent<TMP_InputField>();
+            input_tray_cart[i].text = "" + rangos_arts.posiciones_iniciales_cartesianas[i];
         }
-
-        // Agregar primer elemento tray a la lista array_val _cart
-        array_val_cart.Add(val_cart);
-        for (int j=0; j<6; j++){
-            Acceso_Datos.agregar_valores_tray(array_val_cart[0],"val_art"+(j+1), rangos_arts.posiciones_iniciales_cartesianas[j]);
-        }
-
-        // Desactivar el toggle del prefab
-        Acceso_Datos.activar_desactivar_toggle(array_val_cart[0], false);
-
         // Botones a la escucha
         btn_agregar.onClick.AddListener(agregar);
         btn_eliminar.onClick.AddListener(eliminar);
@@ -75,10 +55,9 @@ public class Adaptador_car_puma : MonoBehaviour
         btn_P0.onClick.AddListener(v_Po);
         btn_cargar.onClick.AddListener(cargar);
 
-        // Inicialización de la posición inicia del prefab
-        pos_prefab = val_cart.transform.localPosition;
-        dim_content = content_tray.sizeDelta;
-
+        // Se obtiene el script que maneja el scroll view internamente
+        scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
+        scrol_view_tray.inicializar_posiciones(rangos_arts.posiciones_iniciales_cartesianas);
     }
 
     void funciones_de_prueba(List<float> array){
@@ -87,68 +66,23 @@ public class Adaptador_car_puma : MonoBehaviour
         }
     }
     // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    void Update(){
 
+    }
     void agregar(){
-        if (num_val_cart < num_max_val_cart){
-            array_val_cart.Add(Instantiate(val_cart, content_tray, false));
-            array_val_cart[num_val_cart].transform.name = "val_arts"+num_val_cart;
-
-            // Ampliación del content
-            dim_content.y +=30;
-            content_tray.sizeDelta  = dim_content;
-
-            pos_prefab.y = -30*(num_val_cart+1);
-            array_val_cart[num_val_cart].transform.localPosition = pos_prefab;
-
-            // Activar el toggle o checkbox
-            Acceso_Datos.activar_desactivar_toggle(array_val_cart[num_val_cart], true);
-            
-            
-            // Agregación del los valores a las trayectorias
-            for (int i=0; i<6; i++){
-                Acceso_Datos.agregar_valores_tray(array_val_cart[num_val_cart],"val_art"+(i+1), 
-                float.Parse(input_tray_cart[i].text)); 
-            }
-            num_val_cart ++;
-        }
+       // Retornar valores de los input text cartesianos
+       List<float> values = new List<float>();
+       foreach(TMP_InputField input in input_tray_cart){
+            values.Add(float.Parse(input.text));
+       }
+       // Se envían al scrol view para ser agregados
+       scrol_view_tray.agregar(values);
     }
+
     void eliminar(){
-        if (num_val_cart > 1){
-            List<int> index_a_elim = new List<int>();
-            int index = 0;
-            foreach (GameObject val_art in array_val_cart){
-                Toggle status = val_art.transform.Find("Toggle").GetComponent<Toggle>();
-                if (status.isOn){
-                    index_a_elim.Add(index);
-                }
-                index ++;
-            }
-
-            index_a_elim.Sort();
-            index_a_elim.Reverse();
-
-            foreach(int index_ in index_a_elim){
-                Destroy(array_val_cart[index_]);
-                array_val_cart.RemoveAt(index_);
-
-                dim_content.y -=30;
-                content_tray.sizeDelta  = dim_content;
-
-                num_val_cart --;
-            }
-
-            // Actualizar los prefab a las posiciones normales y sus respectivos nombres
-            for (int i=1; i<num_val_cart;i++ ){
-                array_val_cart[i].transform.name = "val_arts"+i;
-                pos_prefab.y = -30*(i+1);
-                array_val_cart[i].transform.localPosition = pos_prefab;
-            }
-        }
+       scrol_view_tray.eliminar();
     }
+
     void probar(){
         // Posicion final e inicial
         float [] pos_inicial = new float [6];
@@ -176,6 +110,7 @@ public class Adaptador_car_puma : MonoBehaviour
         var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
         StartCoroutine(mover_robot(tray_.Item1, tray_.Item2));
     }
+
     IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
         for (int i=0; i<tray[0].Count; i++ ){
             for (int j=0; j<6; j++){
@@ -192,6 +127,7 @@ public class Adaptador_car_puma : MonoBehaviour
             yield return 0;   
         }
     }
+
     IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
         for (int k=0; k<tray.Count; k++){ // el de las trayectorias
             for (int i=0; i<tray[0][0].Count; i++ ){
@@ -206,20 +142,19 @@ public class Adaptador_car_puma : MonoBehaviour
                     Posiciones_robot.pos_car[j].text = tc[k][j][i].ToString("0.##");
                 } 
                 Thread.Sleep(TIEMPO_MUESTREO);
-            yield return 0;   
+                yield return 0;   
+            }
         }
-        }
-
     }
 
     void cargar(){
         List<List<float>> values = new List<List<float>>();
-
         // Se agregan los valores en donde esta el robot actualmente
         values.Add(Posiciones_robot.POS_CAR);
 
         // Se obtienen los valores de cada movimiento
-        for(int i=0; i<num_val_cart; i++){
+        List<GameObject> array_val_cart = scrol_view_tray.get_array_val_arts();
+        for(int i=0; i<array_val_cart.Count; i++){
             List<float> _value = new List<float>();
             for (int j=0; j<6; j++){
                 _value.Add(Acceso_Datos.obtener_valores_tray(array_val_cart[i], "val_art"+(j+1)));
