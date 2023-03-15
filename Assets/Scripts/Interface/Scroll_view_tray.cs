@@ -24,7 +24,10 @@ public class Scroll_view_tray : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        // Inicialización de la posición inicia del prefab
+        pos_prefab = val_arts.transform.localPosition;
+        dim_content = content_trays.sizeDelta;
+        dim_content_y = content_trays.sizeDelta.y;
     }
 
     // Update is called once per frame
@@ -34,11 +37,6 @@ public class Scroll_view_tray : MonoBehaviour
     }
     public void inicializar_posiciones(float [] posiciones_iniciales){
         array_val_arts.Add(val_arts);
-        // Inicialización de la posición inicia del prefab
-        pos_prefab = val_arts.transform.localPosition;
-        dim_content = content_trays.sizeDelta;
-        dim_content_y = content_trays.sizeDelta.y;
-        
         Acceso_Datos.activar_desactivar_toggle(array_val_arts[0], false);
         for (int i=0; i<NUMERO_ARTICULACIONES; i++){
             Acceso_Datos.agregar_valores_tray(array_val_arts[0],"val_art"+(i+1), posiciones_iniciales[i]); 
@@ -85,7 +83,7 @@ public class Scroll_view_tray : MonoBehaviour
             this.num_val_arts ++;
         }
         // Agregación del los valores a las trayectorias
-        for (int num_val_arts = 1; num_val_arts<tray.Count; num_val_arts++){
+        for (int num_val_arts = 0; num_val_arts<tray.Count; num_val_arts++){
             for (int i=0; i<6; i++){
                 Acceso_Datos.agregar_valores_tray(array_val_arts[num_val_arts],"val_art"+(i+1), tray[num_val_arts][i]); 
             }

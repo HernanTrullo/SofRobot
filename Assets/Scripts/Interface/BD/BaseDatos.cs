@@ -8,8 +8,7 @@ public class BaseDatos : MonoBehaviour
 {
     public TMP_Dropdown dropdown_nombre_trays;
     public TextMeshProUGUI descripcion;
-    public RectTransform content_trays;
-    public GameObject val_arts;
+    public RectTransform scroll_view;
     public Button btn_refrescar;
 
     // Los paneles de dialogo eliminar y guardar
@@ -22,17 +21,9 @@ public class BaseDatos : MonoBehaviour
     // Los las entradas de nombre y descrpcion
     public TMP_InputField inputf_nombre;
     public TMP_InputField inputf_descripción;
-
-    // El arreglo que controla el scrollview
-    private List<GameObject> array_val_arts = new List<GameObject>();
-
-
-    // Posicion del prefab y aplicación del content
-    private Vector3 pos_prefab;
-    private Vector2 dim_content;
-    private float dim_content_y; 
     
-
+    // Script que maneja el scroll view de las trayectorias
+    private Scroll_view_tray scrol_view_tray;
     // Start is called before the first frame update
     void Start()
     {
@@ -41,14 +32,6 @@ public class BaseDatos : MonoBehaviour
         dropdown_nombre_trays.onValueChanged.AddListener(delegate{
             mostrar_tray(dropdown_nombre_trays);
         });
-        // Se agrega al primer objeto
-        array_val_arts.Add(val_arts);
-        Acceso_Datos.activar_desactivar_toggle(array_val_arts[0], false);
-
-        // Inicializacion del dimcontent
-        pos_prefab = val_arts.transform.localPosition;
-        dim_content = content_trays.sizeDelta;
-        dim_content_y = content_trays.sizeDelta.y;
 
         // Asignacion del evento correspondiente
         cuadro_dialogo_guardar.transform.GetComponent<Cuadro_dialogo>().btn_si_click_event.AddListener(
@@ -67,6 +50,8 @@ public class BaseDatos : MonoBehaviour
             bajar
         );
 
+        scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
+        scrol_view_tray.inicializar_posiciones(new float[]{0,0,0,0,0,0});
     }
 
     // Update is called once per frame
@@ -74,47 +59,18 @@ public class BaseDatos : MonoBehaviour
     {
         
     }
-    void agregar(List<List<float>> tray){
-        // Se eliminan los gameObject para volver a actualizar la lista
-        for(int index_= array_val_arts.Count-1; index_>0; index_--){
-            Destroy(array_val_arts[index_]);
-            array_val_arts.RemoveAt(index_);
-        }
-
-        for (int num_val_arts = 1; num_val_arts<tray.Count; num_val_arts++){
-            array_val_arts.Add(Instantiate(val_arts, content_trays, false));
-            array_val_arts[num_val_arts].transform.name = "val_arts"+num_val_arts;
-
-            pos_prefab.y = -30*(num_val_arts+1);
-            array_val_arts[num_val_arts].transform.localPosition = pos_prefab;
-
-            // Activar el toggle o checkbox
-            Acceso_Datos.activar_desactivar_toggle(array_val_arts[num_val_arts], false);
-
-        }
-        // Agregación del los valores a las trayectorias
-        for (int num_val_arts = 0; num_val_arts<tray.Count; num_val_arts++){
-            for (int i=0; i<6; i++){
-                Acceso_Datos.agregar_valores_tray(array_val_arts[num_val_arts],"val_art"+(i+1), tray[num_val_arts][i]); 
-            }
-        }
-
-        // Ampliación del content
-        dim_content.y = dim_content_y + 30*(tray.Count-1);
-        content_trays.sizeDelta  = dim_content;
-    }
     void subir(){
-        bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(array_val_arts);
+        bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());
     }
     void bajar(){
-        agregar(bd_trayectorias.TRAY_SCROLL_VIEW);
+        scrol_view_tray.agregar(bd_trayectorias.TRAY_SCROLL_VIEW);
     }
     void mostrar_tray(TMP_Dropdown dropdown){
         TRAY_BD tray_bd = bd_trayectorias.cargar_tray();  // Se cargan las trayectorias que existen en el archivo .json
         descripcion.text = tray_bd.tray_bd[dropdown.value].descripcion;
 
         // Se muestra la lista_tray de la primera trayectoria por defecto
-        agregar(tray_bd.tray_bd[dropdown.value].tray);
+        scrol_view_tray.agregar(tray_bd.tray_bd[dropdown.value].tray);
 
         // Se agregan el nombre y la descripcion del objeto por defecto
         inputf_nombre.text = tray_bd.tray_bd[dropdown_nombre_trays.value].nombre_tray;
@@ -139,40 +95,51 @@ public class BaseDatos : MonoBehaviour
         descripcion.text = tray_bd.tray_bd[dropdown_nombre_trays.value].descripcion;
 
         // Se muestra la lista_tray de la primera trayectoria por defecto
-        agregar(tray_bd.tray_bd[dropdown_nombre_trays.value].tray);
+        scrol_view_tray.agregar(tray_bd.tray_bd[dropdown_nombre_trays.value].tray);
 
         // Se agregan el nombre y la descripcion del objeto por defecto
         inputf_nombre.text = tray_bd.tray_bd[dropdown_nombre_trays.value].nombre_tray;
         inputf_descripción.text = tray_bd.tray_bd[dropdown_nombre_trays.value].descripcion;
     }
     void guardar(){
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(); // Se carga la trayectoria
+
+        // Retornar el objeto de tipo list<tray_bd>
+        Tray_BD tray_ = new Tray_BD();
+        tray_.tray = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());
+        tray_.descripcion = inputf_descripción.text;
+        tray_.nombre_tray = inputf_nombre.text;
         
+        // Se agrega al objeto ya retornado
+        tray_bd.tray_bd.Add(tray_);
+
+        // Se carga a la base de datos nuevamente
+        bd_trayectorias.guardar_tray(tray_bd);
+
+        // Se refreca 
+        refrescar();
     }
     void eliminar(){
-        
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(); // Se carga la trayectoria
+
+        // Se elimina la trayectoria asociada al index del dropdown
+        tray_bd.tray_bd.RemoveAt(dropdown_nombre_trays.value);
+
+        // Se carga a la base de datos
+        bd_trayectorias.guardar_tray(tray_bd);
+
+        // Se refreca 
+        refrescar();
     }
     void actualizar(){
-        TRAY_BD tray_bd = bd_trayectorias.cargar_tray();  // Se cargan las trayectorias que existen en el archivo .json
-
-        // Devolver la lista de los valores de la trayectoria a actualizar
-        List<List<float>> values = new List<List<float>>();
-        // Se obtienen los valores de cada movimiento
-        foreach(GameObject val_arts in array_val_arts){
-            List<float> _value = new List<float>();
-            for (int j=0; j<6; j++){
-                // Se coloca i+1 debido a que la trayectoria inicial siempre se manetiene
-                _value.Add(Acceso_Datos.obtener_valores_tray(val_arts, "val_art"+(j+1)));
-            }
-            values.Add(_value);
-        }
-
+        // Se cargan las trayectorias que existen en el archivo .json
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray();  
         // Actualizacion de la trayectoria
-        tray_bd.tray_bd[dropdown_nombre_trays.value].tray = values;
+        tray_bd.tray_bd[dropdown_nombre_trays.value].tray = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());;
         // Actualizacion de la descripcion
         tray_bd.tray_bd[dropdown_nombre_trays.value].descripcion = inputf_descripción.text;
         // Actualizacion del nombre
         tray_bd.tray_bd[dropdown_nombre_trays.value].nombre_tray = inputf_nombre.text;
-
         // Se guardan los cambios
         bd_trayectorias.guardar_tray(tray_bd);
 
