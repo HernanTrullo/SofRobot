@@ -24,6 +24,7 @@ public class BaseDatos : MonoBehaviour
     
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
+    private string NOMBRE_ARCHIVO_BD = "";
     // Start is called before the first frame update
     void Start()
     {
@@ -59,6 +60,9 @@ public class BaseDatos : MonoBehaviour
     {
         
     }
+    public void set_NOMBRE_ARCHIVO_BD(string NOMBRE_ARCHIVO_BD){
+        this.NOMBRE_ARCHIVO_BD = NOMBRE_ARCHIVO_BD; 
+    }
     void subir(){
         bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());
     }
@@ -66,7 +70,7 @@ public class BaseDatos : MonoBehaviour
         scrol_view_tray.agregar(bd_trayectorias.TRAY_SCROLL_VIEW);
     }
     void mostrar_tray(TMP_Dropdown dropdown){
-        TRAY_BD tray_bd = bd_trayectorias.cargar_tray();  // Se cargan las trayectorias que existen en el archivo .json
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(NOMBRE_ARCHIVO_BD);  // Se cargan las trayectorias que existen en el archivo .json
         descripcion.text = tray_bd.tray_bd[dropdown.value].descripcion;
 
         // Se muestra la lista_tray de la primera trayectoria por defecto
@@ -79,7 +83,7 @@ public class BaseDatos : MonoBehaviour
     void refrescar(){
         dropdown_nombre_trays.ClearOptions(); // Se limpian todos los item que haya
         
-        TRAY_BD tray_bd = bd_trayectorias.cargar_tray();  // Se cargan las trayectorias que existen en el archivo .json
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(NOMBRE_ARCHIVO_BD);  // Se cargan las trayectorias que existen en el archivo .json
 
         List<string> nombre_tray = new List<string>(); // El arreglo que contiene las opciones del desplegable
 
@@ -102,7 +106,7 @@ public class BaseDatos : MonoBehaviour
         inputf_descripción.text = tray_bd.tray_bd[dropdown_nombre_trays.value].descripcion;
     }
     void guardar(){
-        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(); // Se carga la trayectoria
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(NOMBRE_ARCHIVO_BD); // Se carga la trayectoria
 
         // Retornar el objeto de tipo list<tray_bd>
         Tray_BD tray_ = new Tray_BD();
@@ -114,26 +118,26 @@ public class BaseDatos : MonoBehaviour
         tray_bd.tray_bd.Add(tray_);
 
         // Se carga a la base de datos nuevamente
-        bd_trayectorias.guardar_tray(tray_bd);
+        bd_trayectorias.guardar_tray(tray_bd,NOMBRE_ARCHIVO_BD);
 
         // Se refreca 
         refrescar();
     }
     void eliminar(){
-        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(); // Se carga la trayectoria
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(NOMBRE_ARCHIVO_BD); // Se carga la trayectoria
 
         // Se elimina la trayectoria asociada al index del dropdown
         tray_bd.tray_bd.RemoveAt(dropdown_nombre_trays.value);
 
         // Se carga a la base de datos
-        bd_trayectorias.guardar_tray(tray_bd);
+        bd_trayectorias.guardar_tray(tray_bd,NOMBRE_ARCHIVO_BD);
 
         // Se refreca 
         refrescar();
     }
     void actualizar(){
         // Se cargan las trayectorias que existen en el archivo .json
-        TRAY_BD tray_bd = bd_trayectorias.cargar_tray();  
+        TRAY_BD tray_bd = bd_trayectorias.cargar_tray(NOMBRE_ARCHIVO_BD);  
         // Actualizacion de la trayectoria
         tray_bd.tray_bd[dropdown_nombre_trays.value].tray = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());;
         // Actualizacion de la descripcion
@@ -141,7 +145,7 @@ public class BaseDatos : MonoBehaviour
         // Actualizacion del nombre
         tray_bd.tray_bd[dropdown_nombre_trays.value].nombre_tray = inputf_nombre.text;
         // Se guardan los cambios
-        bd_trayectorias.guardar_tray(tray_bd);
+        bd_trayectorias.guardar_tray(tray_bd,NOMBRE_ARCHIVO_BD);
 
         refrescar();
     }

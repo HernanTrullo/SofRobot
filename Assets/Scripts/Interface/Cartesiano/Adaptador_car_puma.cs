@@ -17,7 +17,13 @@ public class Adaptador_car_puma : MonoBehaviour
     public Button btn_P0;               // Boton para enviar a la posicion (cartesiana) inicial
     public Button btn_cargar;           // Boton para cargar varias trayectorias
 
+    // Cuadros de dialogo
+    public RectTransform cuadro_dialogo_subir;
+    public RectTransform cuadro_dialogo_bajar;
+
+
     public GameObject PUMA_gemelo;       // gemelo digital
+    public RectTransform BD_panel;
 
     private TMP_InputField [] input_tray_cart = new TMP_InputField[6];
 
@@ -55,16 +61,22 @@ public class Adaptador_car_puma : MonoBehaviour
         btn_P0.onClick.AddListener(v_Po);
         btn_cargar.onClick.AddListener(cargar);
 
+        // Se agregan los eventos del cuadro de dialogo
+        cuadro_dialogo_subir.transform.GetComponent<Cuadro_dialogo>().btn_si_click_event.AddListener(
+            subir
+        );
+        cuadro_dialogo_bajar.transform.GetComponent<Cuadro_dialogo>().btn_si_click_event.AddListener(
+            bajar
+        );
+        
         // Se obtiene el script que maneja el scroll view internamente
         scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
         scrol_view_tray.inicializar_posiciones(rangos_arts.posiciones_iniciales_cartesianas);
-    }
 
-    void funciones_de_prueba(List<float> array){
-        for(int j=0; j<array.Count; j++){
-            Debug.Log(""+array[j]);
-        }
+        // Se inicializa el nombre de la base de datos
+        BD_panel.transform.GetComponent<BaseDatos>().set_NOMBRE_ARCHIVO_BD(bd_trayectorias.BD_PUMA_CART);
     }
+    
     // Update is called once per frame
     void Update(){
 
@@ -173,5 +185,12 @@ public class Adaptador_car_puma : MonoBehaviour
 
         // Se inicializa la corrutina
         StartCoroutine(mover_robot_tray(tray_gen, tray_gen_car));
+    }
+    void subir(){
+        bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());
+    }
+
+    void bajar(){
+        scrol_view_tray.agregar(bd_trayectorias.TRAY_SCROLL_VIEW);
     }
 }

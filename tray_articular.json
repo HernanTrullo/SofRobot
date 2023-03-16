@@ -53,6 +53,60 @@
       ],
       "nombre_tray": "Tray_2",
       "descripcion": "Trayectoria inicial para comprobar el funcionamiento de la base de datos."
+    },
+    {
+      "tray": [
+        [
+          0.0,
+          67.0,
+          185.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          41.58,
+          106.54,
+          243.21,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          41.58,
+          106.54,
+          243.21,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          41.58,
+          106.54,
+          243.21,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          41.58,
+          106.54,
+          243.21,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          41.58,
+          106.54,
+          243.21,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "nombre_tray": "Tray_4",
+      "descripcion": "Trayectoria de prueba."
     }
   ]
 }

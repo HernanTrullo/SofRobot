@@ -24,14 +24,15 @@ public static class bd_trayectorias
     // Atributo global que se encarga de guardar temporalmente las trayectorias
     public static List<List<float>> TRAY_SCROLL_VIEW;
 
-    private const string nombre_archivo = "nombre_tray.json";
+    public const string BD_PUMA_ART = "tray_articular.json";
+    public const string BD_PUMA_CART = "tray_cartesiana.json";
 
-    public static void guardar_tray(TRAY_BD tray_bd){
-        
+    public static void guardar_tray(TRAY_BD tray_bd, string nombre_archivo){
         string json_data = JsonConvert.SerializeObject(tray_bd, Formatting.Indented);
-        File.WriteAllText(nombre_archivo, json_data); 
+        File.WriteAllText(nombre_archivo, json_data);
+        
     }
-    public static TRAY_BD cargar_tray(){
+    public static TRAY_BD cargar_tray(string nombre_archivo){
         if (!File.Exists(nombre_archivo)){
             return null;
         }

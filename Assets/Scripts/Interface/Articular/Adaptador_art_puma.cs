@@ -26,6 +26,9 @@ public class Adaptador_art_puma : MonoBehaviour
     public RectTransform cuadro_dialogo_subir;
     public RectTransform cuadro_dialogo_bajar;
 
+    // Base de datos
+    public RectTransform BD_panel;
+
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
     // Script que maneja el gemelo digital
@@ -88,6 +91,9 @@ public class Adaptador_art_puma : MonoBehaviour
         // Se obtiene el script que maneja el scroll view internamente
         scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
         scrol_view_tray.inicializar_posiciones(rangos_arts.posiciones_iniciales);
+
+        // Se ininializa el nombre del archivo 
+        BD_panel.transform.GetComponent<BaseDatos>().set_NOMBRE_ARCHIVO_BD(bd_trayectorias.BD_PUMA_ART);
     }
     // Update is called once per frame
     void Update()
