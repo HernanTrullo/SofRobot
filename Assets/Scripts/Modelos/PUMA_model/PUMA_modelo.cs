@@ -65,7 +65,13 @@ public class PUMA_modelo
         }
 
         Vector3 angles_grados = angles*Mathf.Rad2Deg;
-
+        if (angles_grados.x < 0){
+            angles_grados.x = 360 + angles_grados.x;
+        } 
+        if (angles_grados.z < 0){
+            angles_grados.z = 360 + angles_grados.z;
+        }
+        
         return new float[] {angles_grados.x, angles_grados.y, angles_grados.z};
     }
 
@@ -144,6 +150,11 @@ public class PUMA_modelo
         float C6 = -Coseno(q4)*Gz - Seno(q4)*Gx;
 
         float q6 = Mathf.Atan2(S6,C6);
+
+        if (q3<0){
+            q3 = 2*Mathf.PI+q3;
+        }
+
         if (q4<0){
             q4 = 2*Mathf.PI+q4;
         }

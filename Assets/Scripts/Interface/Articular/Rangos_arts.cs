@@ -16,22 +16,22 @@ namespace RobSof.Assets.Scripts.Interface.Articular
         private int art3_min = 100;
         private int art3_max = 270;
 
-        private int art4_min = -70;
-        private int art4_max = 70;
+        private int art4_min = 180-45;
+        private int art4_max = 180+45;
 
         private int art5_min = -80;
         private int art5_max = 80;
 
-        private int art6_min = -60;
-        private int art6_max = 60;
+        private int art6_min = 180-45;
+        private int art6_max = 180+45;
 
-        private float posx= 0.45f;
-        private float posy = 0.00f;
-        private float posz = 0.45f;
+        private float posx= 0.8f;
+        private float posy = 0.0f;
+        private float posz = 0.3f;
 
-        private float rotx = 0;
-        private float roty = 180;
-        private float rotz = 0;
+        private float rotx = 180;
+        private float roty = 0;
+        private float rotz = 180;
 
 
         public int [,] rango_arts = new int[6,2];

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Trayectoria
 {
-    public static float TIEMPO_MUESTREO = 0.01f;
+    public static float TIEMPO_MUESTREO = 0.02f;
     private PUMA_modelo puma_modelo = new PUMA_modelo();
 
     public List<float> grado_5(float pos_inicial, float pos_final, int T_FINAL){

@@ -273,6 +273,7 @@ MonoBehaviour:
   cuadro_dialogo_subir: {fileID: 1969682481}
   cuadro_dialogo_bajar: {fileID: 775854898}
   BD_panel: {fileID: 1902103813}
+  conexion_upd: {fileID: 333783730}
 --- !u!1001 &46791218
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3257,6 +3258,7 @@ GameObject:
   m_Component:
   - component: {fileID: 333783732}
   - component: {fileID: 333783733}
+  - component: {fileID: 333783734}
   m_Layer: 0
   m_Name: Comunicacion
   m_TagString: Untagged
@@ -3293,6 +3295,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Uduino: {fileID: 939622661}
+--- !u!114 &333783734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 333783730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dcc51da2b91fae45856cd4db104b10d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &364127674
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14889,6 +14903,7 @@ MonoBehaviour:
   cuadro_dialogo_bajar: {fileID: 1237416144}
   PUMA_gemelo: {fileID: 1235771774}
   BD_panel: {fileID: 324250412}
+  conexion_upd: {fileID: 333783730}
 --- !u!1 &1548624906
 GameObject:
   m_ObjectHideFlags: 0

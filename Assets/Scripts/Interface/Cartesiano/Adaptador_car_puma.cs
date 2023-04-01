@@ -25,17 +25,21 @@ public class Adaptador_car_puma : MonoBehaviour
     public GameObject PUMA_gemelo;       // gemelo digital
     public RectTransform BD_panel;
 
+    // Conexion Robot Real
+    public GameObject conexion_upd;
+
     private TMP_InputField [] input_tray_cart = new TMP_InputField[6];
 
     // Clase trayectoria
     Trayectoria tray = new Trayectoria();
-    private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
+    private int TIEMPO_MUESTREO = 0;//Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
 
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
-
     // Script que maneja el gemelo digital
     private Gemelo_digital PUMA_script;
+    // Script que maneja la conexion con el robot
+    private COM_upd com_udp;
 
     // Modelo del puma
     PUMA_modelo pm_mod = new PUMA_modelo();
@@ -72,6 +76,8 @@ public class Adaptador_car_puma : MonoBehaviour
         // Se obtiene el script que maneja el scroll view internamente
         scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
         scrol_view_tray.inicializar_posiciones(rangos_arts.posiciones_iniciales_cartesianas);
+        // El script de la conexion
+        com_udp = conexion_upd.GetComponent<COM_upd>();
 
         // Se inicializa el nombre de la base de datos
         BD_panel.transform.GetComponent<BaseDatos>().set_NOMBRE_ARCHIVO_BD(bd_trayectorias.BD_PUMA_CART);
@@ -113,18 +119,23 @@ public class Adaptador_car_puma : MonoBehaviour
     }
 
     void v_Po(){
+
         float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
 
         for (int i=0; i<6; i++){
             pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
+            input_tray_cart[i].text = "" + rangos_arts.posiciones_iniciales_cartesianas[i];
         }
         
-        var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA-1, 6);
+        var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA+1, 6);
         StartCoroutine(mover_robot(tray_.Item1, tray_.Item2));
+
     }
 
     IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
+        com_udp.iniciar_cliente();
         for (int i=0; i<tray[0].Count; i++ ){
+            List<float> tray_send = new List<float>();
             for (int j=0; j<6; j++){
                 PUMA_script.rotar_articulación(j, tray[j][i]);
                 // Se asignan a las posiciones cartesianas
@@ -134,15 +145,22 @@ public class Adaptador_car_puma : MonoBehaviour
                 // Se asignas a las posiciones articulares
                 Posiciones_robot.POS_ART[j] = tray[j][i];
                 Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
-            } 
-            Thread.Sleep(TIEMPO_MUESTREO);
-            yield return 0;   
+
+                // Se llena el tray_send
+                tray_send.Add(tray[j][i]);
+
+            }
+            StartCoroutine(com_udp.trasnmitir(tray_send));
+            yield return 0;
         }
+        //com_udp.cerrar_cliente(); 
     }
 
     IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
         for (int k=0; k<tray.Count; k++){ // el de las trayectorias
+            com_udp.iniciar_cliente();
             for (int i=0; i<tray[0][0].Count; i++ ){
+                List<float> tray_send = new List<float>();
                 for (int j=0; j<tray[0].Count; j++){
                     PUMA_script.rotar_articulación(j, tray[k][j][i]);
                     // Actualización Posiciones Articulares
@@ -152,10 +170,14 @@ public class Adaptador_car_puma : MonoBehaviour
                     // Actualización Posiciones Cartesianas
                     Posiciones_robot.POS_CAR[j] = tc[k][j][i];
                     Posiciones_robot.pos_car[j].text = tc[k][j][i].ToString("0.##");
-                } 
-                Thread.Sleep(TIEMPO_MUESTREO);
-                yield return 0;   
+
+                    // Se llena el tray_send
+                    tray_send.Add(tray[k][j][i]);
+                }
+                StartCoroutine(com_udp.trasnmitir(tray_send));
+                yield return TIEMPO_MUESTREO;   
             }
+            com_udp.cerrar_cliente();
         }
     }
 

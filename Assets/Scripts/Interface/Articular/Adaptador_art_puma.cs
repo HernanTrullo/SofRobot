@@ -10,7 +10,7 @@ public class Adaptador_art_puma : MonoBehaviour
 {
     public RectTransform scroll_view;
     public RectTransform content_arts;       // El ambiente content del scrol_arts view
-    public GameObject val_arts;       // El prebaf de las trayectorias articulares
+    public GameObject val_arts;               // El prebaf de las trayectorias articulares
     
 
     public Button btn_agregar;          // Boton agregar
@@ -29,10 +29,17 @@ public class Adaptador_art_puma : MonoBehaviour
     // Base de datos
     public RectTransform BD_panel;
 
+    // Conexion Robot Real
+    public GameObject conexion_upd;
+
+
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
     // Script que maneja el gemelo digital
     private Gemelo_digital PUMA_script;
+
+    // Script que maneja la conexion con el robot
+    private COM_upd com_udp;
 
     // Numero de articulaciones 
     private int NUMERO_ARTICULACIONES = 6;
@@ -43,18 +50,21 @@ public class Adaptador_art_puma : MonoBehaviour
 
     // Llamada a la clase trayectoria
     private Trayectoria tray = new Trayectoria();
-    private int TIEMPO_MUESTREO = Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
+    private int TIEMPO_MUESTREO = 0;//Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO-0.005f);
     private Rangos_arts rangos_arts = new Rangos_arts();
     // Tiempo de la trayectoria
-    private int TIEMPO_TRAYECTORIA = 3;
+    private int TIEMPO_TRAYECTORIA = 2;
     // Start is called before the first frame update
     void Start()
     {
         sliders = new Transform[NUMERO_ARTICULACIONES];
         script_slider = new Slider_art[NUMERO_ARTICULACIONES];
+        
 
         // Se instancia el script que maneja el gameObject (PUMA) 
         PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
+        // El script de la conexion
+        com_udp = conexion_upd.GetComponent<COM_upd>();
 
         // Se coloca el boton a la escucha
         btn_agregar.onClick.AddListener(agregar);
@@ -134,8 +144,10 @@ public class Adaptador_art_puma : MonoBehaviour
     }
 
     IEnumerator mover_robot(List<List<float>> tray, List<List<float>> tc){
+        com_udp.iniciar_cliente();
         for (int i=0; i<tray[0].Count; i++ ){
-            for (int j=0; j<NUMERO_ARTICULACIONES; j++){
+            List<float> tray_send = new List<float>();
+            for (int j=0; j<tray.Count; j++){
                 PUMA_script.rotar_articulación(j, tray[j][i]);
                 // Actualización Posiciones Articulares
                 Posiciones_robot.POS_ART[j]= tray[j][i];
@@ -144,14 +156,20 @@ public class Adaptador_art_puma : MonoBehaviour
                 // Actualización Posiciones Cartesianas
                 Posiciones_robot.POS_CAR[j] = tc[j][i];
                 Posiciones_robot.pos_car[j].text = tc[j][i].ToString("0.##");
-            } 
-            Thread.Sleep(TIEMPO_MUESTREO);
-            yield return 0;   
+
+                // Se llena el tray_send
+                tray_send.Add(tray[j][i]);
+            }
+            StartCoroutine(com_udp.trasnmitir(tray_send));
+            yield return TIEMPO_MUESTREO;   
         }
+        com_udp.cerrar_cliente();
     }
     IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
         for (int k=0; k<tray.Count; k++){ // el de las trayectorias
+            com_udp.iniciar_cliente();
             for (int i=0; i<tray[0][0].Count; i++ ){
+                List<float> tray_send = new List<float>();
                 for (int j=0; j<tray[0].Count; j++){
                     PUMA_script.rotar_articulación(j, tray[k][j][i]);
                     // Actualización Posiciones Articulares
@@ -161,10 +179,14 @@ public class Adaptador_art_puma : MonoBehaviour
                     // Actualización Posiciones Cartesianas
                     Posiciones_robot.POS_CAR[j] = tc[k][j][i];
                     Posiciones_robot.pos_car[j].text = tc[k][j][i].ToString("0.##");
-                } 
-                Thread.Sleep(TIEMPO_MUESTREO);
-            yield return 0;   
-        }
+
+                    // Se llena el tray_send
+                    tray_send.Add(tray[k][j][i]);
+                }
+                StartCoroutine(com_udp.trasnmitir(tray_send));
+                yield return TIEMPO_MUESTREO;   
+            }
+            com_udp.cerrar_cliente();
         }
 
     }
@@ -173,7 +195,6 @@ public class Adaptador_art_puma : MonoBehaviour
         for (int j=0; j<NUMERO_ARTICULACIONES; j++){
             script_slider[j].set_value(""+rangos_arts.posiciones_iniciales[j].ToString("0.##"));
         }
-        probar();
     }
 
     void cargar(){
