@@ -133,7 +133,7 @@ public class Adaptador_car_puma : MonoBehaviour
     }
 
     IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
-        com_udp.iniciar_cliente();
+        //com_udp.iniciar_cliente();
         for (int i=0; i<tray[0].Count; i++ ){
             List<float> tray_send = new List<float>();
             for (int j=0; j<6; j++){
@@ -150,7 +150,7 @@ public class Adaptador_car_puma : MonoBehaviour
                 tray_send.Add(tray[j][i]);
 
             }
-            StartCoroutine(com_udp.trasnmitir(tray_send));
+            //StartCoroutine(com_udp.trasnmitir(tray_send));
             yield return 0;
         }
         //com_udp.cerrar_cliente(); 
@@ -158,7 +158,7 @@ public class Adaptador_car_puma : MonoBehaviour
 
     IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
         for (int k=0; k<tray.Count; k++){ // el de las trayectorias
-            com_udp.iniciar_cliente();
+            //com_udp.iniciar_cliente();
             for (int i=0; i<tray[0][0].Count; i++ ){
                 List<float> tray_send = new List<float>();
                 for (int j=0; j<tray[0].Count; j++){
@@ -174,10 +174,10 @@ public class Adaptador_car_puma : MonoBehaviour
                     // Se llena el tray_send
                     tray_send.Add(tray[k][j][i]);
                 }
-                StartCoroutine(com_udp.trasnmitir(tray_send));
+                //StartCoroutine(com_udp.trasnmitir(tray_send));
                 yield return TIEMPO_MUESTREO;   
             }
-            com_udp.cerrar_cliente();
+            //com_udp.cerrar_cliente();
         }
     }
 

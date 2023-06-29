@@ -4,7 +4,6 @@ using UnityEngine;
 using Uduino;
 using System.Threading;
 
-
 public class COM : MonoBehaviour
 {
     public GameObject Uduino;
