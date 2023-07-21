@@ -137,14 +137,11 @@ public class Adaptador_car_puma : MonoBehaviour
         for (int i=0; i<tray[0].Count; i++ ){
             List<float> tray_send = new List<float>();
             for (int j=0; j<6; j++){
-                PUMA_script.rotar_articulación(j, tray[j][i]);
                 // Se asignan a las posiciones cartesianas
                 Posiciones_robot.POS_CAR[j] = tc[j][i];
-                Posiciones_robot.pos_car[j].text = tc[j][i].ToString("0.##");
 
                 // Se asignas a las posiciones articulares
                 Posiciones_robot.POS_ART[j] = tray[j][i];
-                Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
 
                 // Se llena el tray_send
                 tray_send.Add(tray[j][i]);
@@ -162,14 +159,11 @@ public class Adaptador_car_puma : MonoBehaviour
             for (int i=0; i<tray[0][0].Count; i++ ){
                 List<float> tray_send = new List<float>();
                 for (int j=0; j<tray[0].Count; j++){
-                    PUMA_script.rotar_articulación(j, tray[k][j][i]);
                     // Actualización Posiciones Articulares
                     Posiciones_robot.POS_ART[j]= tray[k][j][i];
-                    Posiciones_robot.pos_art[j].text = tray[k][j][i].ToString("0.##");
 
                     // Actualización Posiciones Cartesianas
                     Posiciones_robot.POS_CAR[j] = tc[k][j][i];
-                    Posiciones_robot.pos_car[j].text = tc[k][j][i].ToString("0.##");
 
                     // Se llena el tray_send
                     tray_send.Add(tray[k][j][i]);

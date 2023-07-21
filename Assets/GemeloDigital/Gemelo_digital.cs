@@ -23,12 +23,16 @@ public class Gemelo_digital : MonoBehaviour
         arts[3] = art4;
         arts[4] = art5;
         arts[5] = art6;
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        for(int i=0; i<6; i++){
+            rotar_articulación(i, Posiciones_robot.POS_ART[i]);
+        }
+
     }
     public void rotar_articulación(int index_art, float angle){
         if (index_art >=0 && index_art <=2 || index_art==5){

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 
-public static class Controlador_Gemelo 
+public static class Controlador_Gemelos 
 {
     public static IEnumerator mover_robot(List<List<float>> tray, List<List<float>> tc, Gemelo_digital PUMA_script, int TIEMPO_MUESTREO){
         for (int i=0; i<tray[0].Count; i++ ){
             for (int j=0; j<tray.Count; j++){
-                PUMA_script.rotar_articulación(j, tray[j][i]);
+                
                 // Actualización Posiciones Articulares
                 Posiciones_robot.POS_ART[j]= tray[j][i];
                 Posiciones_robot.pos_art[j].text = tray[j][i].ToString("0.##");
@@ -25,7 +25,6 @@ public static class Controlador_Gemelo
         for (int k=0; k<tray.Count; k++){ // el de las trayectorias
             for (int i=0; i<tray[0][0].Count; i++ ){
                 for (int j=0; j<tray[0].Count; j++){
-                    PUMA_script.rotar_articulación(j, tray[k][j][i]);
                     // Actualización Posiciones Articulares
                     Posiciones_robot.POS_ART[j]= tray[k][j][i];
                     Posiciones_robot.pos_art[j].text = tray[k][j][i].ToString("0.##");
