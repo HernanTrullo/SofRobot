@@ -6,7 +6,7 @@ using TMPro;
 public class Input_text : MonoBehaviour
 {
     public TMP_InputField input_field;
-    private string value_default = "0";
+    public string value_default;
 
     // Start is called before the first frame update
     void Start()
