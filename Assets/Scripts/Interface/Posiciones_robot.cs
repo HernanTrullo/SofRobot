@@ -15,6 +15,11 @@ public class Posiciones_robot : MonoBehaviour
     public static List<float> POS_ART = new List<float>(){0,0,0,0,0,0};
     public static List<float> POS_CAR = new List<float>(){0,0,0,0,0,0};
 
+    public static List<float> POS_ART_REAL = new List<float>(){0,0,0,0,0,0};
+    public static List<float> POS_ART_PAS_REAL = new List<float>(){0,0,0,0,0,0};
+
+    public static List<List<float>> error = new List<List<float>>();
+
     private Rangos_arts rangos_arts = new Rangos_arts();
 
     // Start is called before the first frame update
@@ -28,6 +33,10 @@ public class Posiciones_robot : MonoBehaviour
         for (int i=0; i<6; i++){
             // Para las artculciones
             POS_ART[i]= rangos_arts.posiciones_iniciales[i];
+            POS_ART_REAL[i] = rangos_arts.posiciones_iniciales[i];
+            POS_ART_PAS_REAL[i] = rangos_arts.posiciones_iniciales[i];
+
+            
             pos_art[i].text = rangos_arts.posiciones_iniciales[i].ToString("0.##");
 
             // para las cartesianas

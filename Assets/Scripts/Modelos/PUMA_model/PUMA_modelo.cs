@@ -176,7 +176,27 @@ public class PUMA_modelo
         return rotm;
     }
 
-    public void puma_inverso(float t1,float t2,float t3,float t4,float t5,float t6,float QP1,float QP2,float QP3,float QP4,float QP5,float QP6,float QDP1,float QDP2,float QDP3,float QDP4,float QDP5,float QDP6){
+    public float[] puma_inverso(float[] t, float[] QP, float[] QDP){
+
+        float t1 = t[0];
+        float t2 = t[1];
+        float t3 = t[2];
+        float t4 = t[3];
+        float t5 = t[4];
+        float t6 = t[5];
+        float QP1 = QP[0];
+        float QP2 = QP[1];
+        float QP3 = QP[2];
+        float QP4 = QP[3];
+        float QP5 = QP[4];
+        float QP6 = QP[5];
+        float QDP1 = QDP[0];
+        float QDP2 = QDP[1];
+        float QDP3 = QDP[2];
+        float QDP4 = QDP[3];
+        float QDP5 = QDP[4];
+        float QDP6 = QDP[5];
+
 
         float CX2=0;
         float CX3=0;
@@ -195,7 +215,7 @@ public class PUMA_modelo
         float CZ5=0;
         float CZ6=0;
         float D3=d3;
-        float RL4=0.4f;
+        float RL4=r4;
         float FS1=0.0f;
         float FS2=0.0f;
         float FS3=0.0f;
@@ -461,6 +481,8 @@ public class PUMA_modelo
         float GAM4=N34 + IA4*QDP4 + FV4*QP4 + FS4*Mathf.Sign(QP4);
         float GAM5=N35 + IA5*QDP5 + FV5*QP5 + FS5*Mathf.Sign(QP5);
         float GAM6=N36 + IA6*QDP6 + FV6*QP6 + FS6*Mathf.Sign(QP6);
+
+        return new float []{GAM1, GAM2, GAM3, GAM4, GAM5, GAM6};
     }
 
 

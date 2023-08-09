@@ -10,13 +10,14 @@ public class interfaz_grafica : MonoBehaviour
 {
     public GameObject panel_graficas;
     public Button btn_boton_graf; 
-    private bool se_muestra = false;
+    private bool se_muestra = true;
 
     // Aspectos de la interfaz de gráficas
     public TMP_Text lb_y;
     public TMP_Text lb_x;
-    public TMP_Text lb_min;
-    public TMP_Text lb_max;
+    public TMP_Text lb_y_min;
+    public TMP_Text lb_y_max;
+    public TMP_Text lb_x_max;
     public TMP_Text lb_title;
 
     
@@ -29,7 +30,6 @@ public class interfaz_grafica : MonoBehaviour
                                                     "Articulación 5","Articulación 6",
                                                     "Error Cuadrático Medio"};
     private float range_graf_y = 360;
-    private float range_graf_x = 460;
 
     private float pos_ini_y = -180;
     private float pos_ini_x = -230; 
@@ -41,22 +41,15 @@ public class interfaz_grafica : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        btn_boton_graf.onClick.AddListener(mostrar_panel);
         trayect.onValueChanged.AddListener(plotear);
-        
+        btn_boton_graf.onClick.AddListener(mostrar_panel);  
         // Se inicializan los nombres de las trayectorias
         trayect.ClearOptions();
         foreach (var item in name_trayectory)
         {
-            List<float> tray = new List<float>();
-            for (int j=0; j<460; j++){
-                tray.Add(Random.Range(-0.5f, 0.5f));
-            }
-            trayectories.Add(item, tray);
+            trayectories.Add(item, new List<float>());
             trayect.options.Add(new TMP_Dropdown.OptionData(item));
         }
-
-
     }
 
     // Update is called once per frame
@@ -83,15 +76,18 @@ public class interfaz_grafica : MonoBehaviour
     }
 
     private void paint_graf(List<float> tray){
-        float pend_y = (range_graf_y)/(tray.Max()-tray.Min());
-        lb_max.text = tray.Max().ToString("0.##");
-        lb_min.text = tray.Min().ToString("0.##");
+        line_render_graf.positionCount = 1;
 
+        float pend_y = (range_graf_y)/(tray.Max()-tray.Min());
+        float y_0 = pos_ini_y - pend_y*tray.Min();
+        
+        lb_y_max.text = tray.Max().ToString("0.##");
+        lb_y_min.text = tray.Min().ToString("0.##");
+        lb_x_max.text = (Trayectoria.TIEMPO_MUESTREO*tray.Count()).ToString("0.##");
         line_render_graf.positionCount = tray.Count;
 
-
         for (int i = 0; i<line_render_graf.positionCount; i++){
-            Vector3 point = new Vector3(pos_ini_x+i,tray[i]*pend_y ,0);
+            Vector3 point = new Vector3(pos_ini_x+i,tray[i]*pend_y + y_0 ,0);
             line_render_graf.SetPosition(i,point);
         }
     }
@@ -112,4 +108,20 @@ public class interfaz_grafica : MonoBehaviour
         set_lb_x(lb_x);
         set_lb_y(lb_y);
     }
+
+    public void set_trayectoria(List<float> tray, string name_tray){
+        trayectories[name_tray] = tray;
+    }
+
+    public void asignar_trays(List<List<float>> tray){
+        for (var i = 0; i < tray.Count; i++)
+        {
+            set_trayectoria(tray[i], name_trayectory[i]);
+        }
+    }
+
+    public void asignar_ECM(List<float> tray){
+        set_trayectoria(tray, name_trayectory[name_trayectory.Length-1]);
+    }
+
 }

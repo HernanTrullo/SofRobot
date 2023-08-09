@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using RobSof.Assets.Scripts.Interface.Articular;
 using TMPro;
 using System.Threading;
+using System.Linq;
 
 public class Adaptador_art_puma : MonoBehaviour
 {
@@ -32,6 +33,8 @@ public class Adaptador_art_puma : MonoBehaviour
     // Conexion Robot Real
     public GameObject conexion_upd;
 
+    // Gráficas 
+    public GameObject panel_graficas;
 
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
@@ -40,6 +43,10 @@ public class Adaptador_art_puma : MonoBehaviour
 
     // Script que maneja la conexion con el robot
     private COM_upd com_udp;
+
+    // Script que maneja las gráficas
+
+    private interfaz_grafica graf_script;
 
     // Numero de articulaciones 
     private int NUMERO_ARTICULACIONES = 6;
@@ -54,6 +61,12 @@ public class Adaptador_art_puma : MonoBehaviour
     private Rangos_arts rangos_arts = new Rangos_arts();
     // Tiempo de la trayectoria
     private int TIEMPO_TRAYECTORIA = 2;
+
+    // El controlador CTC
+    private ControlCTC controller = new ControlCTC();
+
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -65,6 +78,8 @@ public class Adaptador_art_puma : MonoBehaviour
         PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
         // El script de la conexion
         com_udp = conexion_upd.GetComponent<COM_upd>();
+        // El sript de las gráficas
+        graf_script = panel_graficas.GetComponent<interfaz_grafica>();
 
         // Se coloca el boton a la escucha
         btn_agregar.onClick.AddListener(agregar);
@@ -144,23 +159,43 @@ public class Adaptador_art_puma : MonoBehaviour
     }
 
     IEnumerator mover_robot(List<List<float>> tray, List<List<float>> tc){
-        //com_udp.iniciar_cliente();
+        Posiciones_robot.error.Clear();
+        com_udp.iniciar_cliente();
         for (int i=0; i<tray[0].Count; i++ ){
             List<float> tray_send = new List<float>();
+            float [] vel = new float[]{0,0,0,0,0,0};
+
             for (int j=0; j<tray.Count; j++){
 
                 // Actualización de las posiciones del gemelo
                 Posiciones_robot.POS_ART[j]= tray[j][i];
                 Posiciones_robot.POS_CAR[j] = tc[j][i];
                 
+                // Calulo de velocidad
+                vel[j] = (Posiciones_robot.POS_ART_REAL[j]- Posiciones_robot.POS_ART_PAS_REAL[j])/0.01f;
+                
                 // Se llena el tray_send
                 tray_send.Add(tray[j][i]);
             }
-            // Para enviar la trayectoria al robot
-            //StartCoroutine(com_udp.trasnmitir(tray_send));
+
+            // Algoritmo de control
+            var values=  (controller.retunrTorques(Posiciones_robot.POS_ART, Posiciones_robot.POS_ART_REAL, vel));
+            tray_send.AddRange(values.Item1);
+            Posiciones_robot.error.Add(values.Item2);
+
+            StartCoroutine(com_udp.trasnmitir(tray_send));
+
+            // Se actualizan las posiciones
+            Posiciones_robot.POS_ART_PAS_REAL = Posiciones_robot.POS_ART_REAL;
+            Posiciones_robot.POS_ART_REAL = com_udp.get_values();
+
+
             yield return TIEMPO_MUESTREO;   
         }
-        //com_udp.cerrar_cliente();
+        com_udp.cerrar_cliente();
+
+        // Se cargan a la interfaz de las gráficas
+        graf_script.asignar_trays(this.tray.Transpuesta(Posiciones_robot.error, true));
     }
     IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
         for (int k=0; k<tray.Count; k++){ // el de las trayectorias

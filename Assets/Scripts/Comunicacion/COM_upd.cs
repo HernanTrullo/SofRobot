@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Globalization;
-
+using System.Linq;
 
 
 public class COM_upd : MonoBehaviour
@@ -16,7 +16,7 @@ public class COM_upd : MonoBehaviour
     UdpClient cliente = new UdpClient();
     IPEndPoint servidorEndPoint;
 
-    List<double> values_sensor = new List<double>();
+    List<float> values_sensor = new List<float>();
 
     void Start()
     {
@@ -33,7 +33,7 @@ public class COM_upd : MonoBehaviour
         foreach (float value in values){
             send = send + value.ToString("F2").Replace(",", ".") + "%"; 
         }
-        send = send.Remove(send.Length -1); // Se elimina el utlimo caracter 
+        send = send.Remove(send.Length -1); // Se elimina el ultimo caracter 
         byte[] dtaBytes = Encoding.UTF8.GetBytes(send);
         cliente.Send(dtaBytes, dtaBytes.Length);
 
@@ -58,7 +58,12 @@ public class COM_upd : MonoBehaviour
         string[] valueStr = respuestaS.Split("%");
 
         foreach (var valuestr in valueStr){
-            values_sensor.Add(double.Parse(valuestr));
+            values_sensor.Add(float.Parse(valuestr,CultureInfo.InvariantCulture));
         }
+    }
+
+    public List<float> get_values(){
+
+        return values_sensor;
     }
 }

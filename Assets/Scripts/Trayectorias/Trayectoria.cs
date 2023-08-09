@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using RobSof.Assets.Scripts.Interface.Articular;
 
 public class Trayectoria
 {
-    public static float TIEMPO_MUESTREO = 0.02f;
+    public static float TIEMPO_MUESTREO = 0.01f;
     private PUMA_modelo puma_modelo = new PUMA_modelo();
+    Rangos_arts rangos_arts = new Rangos_arts();
 
     public List<float> grado_5(float pos_inicial, float pos_final, int T_FINAL){
         List<float> tray = new List<float>();
@@ -56,7 +57,7 @@ public class Trayectoria
         return (tray, tc);
     }
 
-    private List<List<float>> Transpuesta(List<List<float>> tt){
+    public List<List<float>> Transpuesta(List<List<float>> tt){
         List<List<float>> tray = new List<List<float>>();
         for (int i =0; i<tt[0].Count;i++){
             List<float> _tray = new List<float>();
@@ -67,7 +68,7 @@ public class Trayectoria
         }
         return tray;
     }
-    private List<List<float>> Transpuesta(List<List<float>> tt, bool bol){
+    public List<List<float>> Transpuesta(List<List<float>> tt, bool bol){
         List<List<float>> tray = new List<List<float>>();
         for (int i =0; i<tt[0].Count;i++){
             List<float> _tray = new List<float>();
@@ -77,6 +78,38 @@ public class Trayectoria
             tray.Add(_tray);
         }
         return tray;
+    }
+
+    public (List<List<float>>, List<List<float>>) tray_circular(float x, float y, float z, float radio, float t_final){
+        List<List<float>> tc = new List<List<float>>(); // tray cartesiana
+        List<List<float>> tt = new List<List<float>>(); // tray articular transpuesta
+
+        float rot_x = rangos_arts.posiciones_iniciales_cartesianas[3];
+        float rot_y = rangos_arts.posiciones_iniciales_cartesianas[4];
+        float rot_z = rangos_arts.posiciones_iniciales_cartesianas[5];
+
+        int num_steps = Mathf.RoundToInt(t_final/TIEMPO_MUESTREO);
+
+        // Trayectoria cartesiana
+        for (int j=0; j<num_steps; j++){
+            float x_t = x ; 
+            float y_t = y + radio*Mathf.Sin(2 * Mathf.PI * j / num_steps);
+            float z_t = z + radio*Mathf.Cos(2 * Mathf.PI * j / num_steps);
+            tc.Add(new List<float>(){x_t,y_t,z_t,rot_x, rot_y, rot_z});
+        }
+        // Trayectoria articular 
+        for (int j=0; j<tc.Count;j++){
+            tt.Add(puma_modelo.mgi_puma(tc[j][0], tc[j][1], tc[j][2], tc[j][3], tc[j][4], tc[j][5]));
+        }
+
+        return (Transpuesta(tt), Transpuesta(tc, true));
+    }
+    string probarstr(float[] values){
+        string st = "";
+        foreach (var item in values){
+            st = st +" % % " + item.ToString();
+        }
+        return st;
     }
     
 }
