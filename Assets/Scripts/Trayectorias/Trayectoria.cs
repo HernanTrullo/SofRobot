@@ -5,7 +5,7 @@ using RobSof.Assets.Scripts.Interface.Articular;
 
 public class Trayectoria
 {
-    public static float TIEMPO_MUESTREO = 0.01f;
+    public static float TIEMPO_MUESTREO = 0.02f;
     private PUMA_modelo puma_modelo = new PUMA_modelo();
     Rangos_arts rangos_arts = new Rangos_arts();
 

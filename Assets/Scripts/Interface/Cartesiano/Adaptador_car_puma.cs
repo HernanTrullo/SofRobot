@@ -21,25 +21,21 @@ public class Adaptador_car_puma : MonoBehaviour
     public RectTransform cuadro_dialogo_subir;
     public RectTransform cuadro_dialogo_bajar;
 
-
-    public GameObject PUMA_gemelo;       // gemelo digital
     public RectTransform BD_panel;
 
-    // Conexion Robot Real
-    public GameObject conexion_upd;
+    // Driver Robot Interfaz
+    public GameObject driver_rob_inter;
 
     private TMP_InputField [] input_tray_cart = new TMP_InputField[6];
 
     // Clase trayectoria
     Trayectoria tray = new Trayectoria();
-    private int TIEMPO_MUESTREO = 0;//Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO*1000);
 
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
-    // Script que maneja el gemelo digital
-    private Gemelo_digital PUMA_script;
-    // Script que maneja la conexion con el robot
-    private COM_upd com_udp;
+
+    // Script que maneja las gráficas
+    private interfaz_grafica graf_script;
 
     // Modelo del puma
     PUMA_modelo pm_mod = new PUMA_modelo();
@@ -50,10 +46,15 @@ public class Adaptador_car_puma : MonoBehaviour
     // Tiempo TRAYECTORIA
     int TIEMPO_TRAYECTORIA = 3;
     // Start is called before the first frame update
+
+    // Scrpt que maneja acceso a las gráficas y control
+    private DriverRobotInterfaz scrpt_driver_rob_int;
+
     void Start()
     {
-        // Se instancia el script que maneja el gameObject (PUMA) 
-        PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
+        // El scrpt que maneja el controlador, lasgráficas y demas
+        scrpt_driver_rob_int =  driver_rob_inter.GetComponent<DriverRobotInterfaz>();
+
         for(int i=0; i<6; i++){
             input_tray_cart[i] = input_tray.Find("cart_"+(i+1)).GetComponent<TMP_InputField>();
             input_tray_cart[i].text = "" + rangos_arts.posiciones_iniciales_cartesianas[i];
@@ -76,8 +77,6 @@ public class Adaptador_car_puma : MonoBehaviour
         // Se obtiene el script que maneja el scroll view internamente
         scrol_view_tray = scroll_view.transform.GetComponent<Scroll_view_tray>();
         scrol_view_tray.inicializar_posiciones(rangos_arts.posiciones_iniciales_cartesianas);
-        // El script de la conexion
-        com_udp = conexion_upd.GetComponent<COM_upd>();
 
         // Se inicializa el nombre de la base de datos
         BD_panel.transform.GetComponent<BaseDatos>().set_NOMBRE_ARCHIVO_BD(bd_trayectorias.BD_PUMA_CART);
@@ -115,7 +114,7 @@ public class Adaptador_car_puma : MonoBehaviour
         // retornar trayectoria
         var trayectoria = tray.tray_cartesiana(pos_inicial, pos_final, TIEMPO_TRAYECTORIA, 6);
         // Se inicializa la corrutina
-        StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
+        StartCoroutine(scrpt_driver_rob_int.mover_robot(trayectoria.Item1, trayectoria.Item2));
     }
 
     void v_Po(){
@@ -128,51 +127,8 @@ public class Adaptador_car_puma : MonoBehaviour
         }
         
         var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA+1, 6);
-        StartCoroutine(mover_robot(tray_.Item1, tray_.Item2));
+        StartCoroutine(scrpt_driver_rob_int.mover_robot(tray_.Item1, tray_.Item2));
 
-    }
-
-    IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
-        //com_udp.iniciar_cliente();
-        for (int i=0; i<tray[0].Count; i++ ){
-            List<float> tray_send = new List<float>();
-            for (int j=0; j<6; j++){
-                // Se asignan a las posiciones cartesianas
-                Posiciones_robot.POS_CAR[j] = tc[j][i];
-
-                // Se asignas a las posiciones articulares
-                Posiciones_robot.POS_ART[j] = tray[j][i];
-
-                // Se llena el tray_send
-                tray_send.Add(tray[j][i]);
-
-            }
-            //StartCoroutine(com_udp.trasnmitir(tray_send));
-            yield return 0;
-        }
-        //com_udp.cerrar_cliente(); 
-    }
-
-    IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
-        for (int k=0; k<tray.Count; k++){ // el de las trayectorias
-            //com_udp.iniciar_cliente();
-            for (int i=0; i<tray[0][0].Count; i++ ){
-                List<float> tray_send = new List<float>();
-                for (int j=0; j<tray[0].Count; j++){
-                    // Actualización Posiciones Articulares
-                    Posiciones_robot.POS_ART[j]= tray[k][j][i];
-
-                    // Actualización Posiciones Cartesianas
-                    Posiciones_robot.POS_CAR[j] = tc[k][j][i];
-
-                    // Se llena el tray_send
-                    tray_send.Add(tray[k][j][i]);
-                }
-                //StartCoroutine(com_udp.trasnmitir(tray_send));
-                yield return TIEMPO_MUESTREO;   
-            }
-            //com_udp.cerrar_cliente();
-        }
     }
 
     void cargar(){
@@ -200,7 +156,7 @@ public class Adaptador_car_puma : MonoBehaviour
         }
 
         // Se inicializa la corrutina
-        StartCoroutine(mover_robot_tray(tray_gen, tray_gen_car));
+        StartCoroutine(scrpt_driver_rob_int.mover_robot_tray(tray_gen, tray_gen_car));
     }
     void subir(){
         bd_trayectorias.TRAY_SCROLL_VIEW = Acceso_Datos.return_values_tray(scrol_view_tray.get_array_val_arts());

@@ -21,8 +21,6 @@ public class Adaptador_art_puma : MonoBehaviour
     public Button btn_cargar;           // Btoton para cargar trayectorias del scroll view
 
 
-    public GameObject PUMA_gemelo;       // gemelo digital
-
     // Cuadros de dialogo
     public RectTransform cuadro_dialogo_subir;
     public RectTransform cuadro_dialogo_bajar;
@@ -30,23 +28,12 @@ public class Adaptador_art_puma : MonoBehaviour
     // Base de datos
     public RectTransform BD_panel;
 
-    // Conexion Robot Real
-    public GameObject conexion_upd;
-
-    // Gráficas 
-    public GameObject panel_graficas;
+    public GameObject gemelo_digital;
+    // driver _robot_ graficas y demas (clase estatica)
+    public GameObject obj_driver_rob_inter;
 
     // Script que maneja el scroll view de las trayectorias
     private Scroll_view_tray scrol_view_tray;
-    // Script que maneja el gemelo digital
-    private Gemelo_digital PUMA_script;
-
-    // Script que maneja la conexion con el robot
-    private COM_upd com_udp;
-
-    // Script que maneja las gráficas
-
-    private interfaz_grafica graf_script;
 
     // Numero de articulaciones 
     private int NUMERO_ARTICULACIONES = 6;
@@ -57,15 +44,12 @@ public class Adaptador_art_puma : MonoBehaviour
 
     // Llamada a la clase trayectoria
     private Trayectoria tray = new Trayectoria();
-    private int TIEMPO_MUESTREO = 0;//Mathf.RoundToInt(Trayectoria.TIEMPO_MUESTREO-0.005f);
     private Rangos_arts rangos_arts = new Rangos_arts();
     // Tiempo de la trayectoria
     private int TIEMPO_TRAYECTORIA = 2;
 
-    // El controlador CTC
-    private ControlCTC controller = new ControlCTC();
 
-
+    private DriverRobotInterfaz script_driver_rob_int; 
 
     // Start is called before the first frame update
     void Start()
@@ -74,12 +58,8 @@ public class Adaptador_art_puma : MonoBehaviour
         script_slider = new Slider_art[NUMERO_ARTICULACIONES];
         
 
-        // Se instancia el script que maneja el gameObject (PUMA) 
-        PUMA_script = PUMA_gemelo.GetComponent<Gemelo_digital>();
-        // El script de la conexion
-        com_udp = conexion_upd.GetComponent<COM_upd>();
-        // El sript de las gráficas
-        graf_script = panel_graficas.GetComponent<interfaz_grafica>();
+        // script que maneja el driver rob_inter
+        script_driver_rob_int = obj_driver_rob_inter.GetComponent<DriverRobotInterfaz>();
 
         // Se coloca el boton a la escucha
         btn_agregar.onClick.AddListener(agregar);
@@ -110,7 +90,7 @@ public class Adaptador_art_puma : MonoBehaviour
             script_slider[i].set_value(""+rangos_arts.posiciones_iniciales[i].ToString("0.##"));
 
             // Gemelo digital
-            PUMA_script.rotar_articulación(i, rangos_arts.posiciones_iniciales[i]);
+            gemelo_digital.GetComponent<Gemelo_digital>().rotar_articulación(i, rangos_arts.posiciones_iniciales[i]);
         }
         
         // Se obtiene el script que maneja el scroll view internamente
@@ -155,68 +135,7 @@ public class Adaptador_art_puma : MonoBehaviour
         var trayectoria = tray.tray_articular(pos_inicial, pos_final, TIEMPO_TRAYECTORIA, NUMERO_ARTICULACIONES);
 
         // Se inicializa la corrutina
-        StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
-    }
-
-    IEnumerator mover_robot(List<List<float>> tray, List<List<float>> tc){
-        Posiciones_robot.error.Clear();
-        com_udp.iniciar_cliente();
-        for (int i=0; i<tray[0].Count; i++ ){
-            List<float> tray_send = new List<float>();
-            float [] vel = new float[]{0,0,0,0,0,0};
-
-            for (int j=0; j<tray.Count; j++){
-
-                // Actualización de las posiciones del gemelo
-                Posiciones_robot.POS_ART[j]= tray[j][i];
-                Posiciones_robot.POS_CAR[j] = tc[j][i];
-                
-                // Calulo de velocidad
-                vel[j] = (Posiciones_robot.POS_ART_REAL[j]- Posiciones_robot.POS_ART_PAS_REAL[j])/0.01f;
-                
-                // Se llena el tray_send
-                tray_send.Add(tray[j][i]);
-            }
-
-            // Algoritmo de control
-            var values=  (controller.retunrTorques(Posiciones_robot.POS_ART, Posiciones_robot.POS_ART_REAL, vel));
-            tray_send.AddRange(values.Item1);
-            Posiciones_robot.error.Add(values.Item2);
-
-            StartCoroutine(com_udp.trasnmitir(tray_send));
-
-            // Se actualizan las posiciones
-            Posiciones_robot.POS_ART_PAS_REAL = Posiciones_robot.POS_ART_REAL;
-            Posiciones_robot.POS_ART_REAL = com_udp.get_values();
-
-
-            yield return TIEMPO_MUESTREO;   
-        }
-        com_udp.cerrar_cliente();
-
-        // Se cargan a la interfaz de las gráficas
-        graf_script.asignar_trays(this.tray.Transpuesta(Posiciones_robot.error, true));
-    }
-    IEnumerator mover_robot_tray (List<List<List<float>>> tray,List<List<List<float>>> tc ){
-        for (int k=0; k<tray.Count; k++){ // el de las trayectorias
-            //com_udp.iniciar_cliente();
-            for (int i=0; i<tray[0][0].Count; i++ ){
-                List<float> tray_send = new List<float>();
-                for (int j=0; j<tray[0].Count; j++){
-
-                    // Actualización Posiciones Articulares
-                    Posiciones_robot.POS_ART[j]= tray[k][j][i];
-                    Posiciones_robot.POS_CAR[j] = tc[k][j][i];
-
-                    // Se llena el tray_send
-                    tray_send.Add(tray[k][j][i]);
-                }
-                //StartCoroutine(com_udp.trasnmitir(tray_send));
-                yield return TIEMPO_MUESTREO;   
-            }
-            //com_udp.cerrar_cliente();
-        }
-
+        StartCoroutine(script_driver_rob_int.mover_robot(trayectoria.Item1, trayectoria.Item2));
     }
 
     void v_Qo(){
@@ -251,7 +170,7 @@ public class Adaptador_art_puma : MonoBehaviour
         }
 
         // Se inicializa la corrutina
-        StartCoroutine(mover_robot_tray(tray_gen, tray_gen_car));
+        StartCoroutine(script_driver_rob_int.mover_robot_tray(tray_gen, tray_gen_car));
     }
 
     void subir(){

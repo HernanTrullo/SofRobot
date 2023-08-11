@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using System.Linq;
+using System;
 
 public class interfaz_grafica : MonoBehaviour
 {
@@ -30,12 +31,13 @@ public class interfaz_grafica : MonoBehaviour
                                                     "Articulación 5","Articulación 6",
                                                     "Error Cuadrático Medio"};
     private float range_graf_y = 360;
+    private float range_graf_x = 460;
 
     private float pos_ini_y = -180;
     private float pos_ini_x = -230; 
 
     // Creación de la descripción de las trayectorias
-    private string lb_title_str = "Error Aritcular: "; 
+    private string lb_title_str = "Error Artitcular: "; 
 
 
     // Start is called before the first frame update
@@ -65,7 +67,7 @@ public class interfaz_grafica : MonoBehaviour
     }
     void plotear(int index){
         if (index < name_trayectory.Length-1){
-            set_labels("Tiempo: Sec", name_trayectory[index]+": m", lb_title_str+name_trayectory[index]);
+            set_labels("Tiempo: Sec", name_trayectory[index]+": °", lb_title_str+name_trayectory[index]);
         }
         else{
             set_labels("Tiempo: Sec", name_trayectory[index]+ ": m", name_trayectory[index]);
@@ -76,18 +78,22 @@ public class interfaz_grafica : MonoBehaviour
     }
 
     private void paint_graf(List<float> tray){
+        Func<float, float> condicionarNumero = x => Mathf.Abs(x) < 0.0001 ? 0 : x;
         line_render_graf.positionCount = 1;
 
-        float pend_y = (range_graf_y)/(tray.Max()-tray.Min());
-        float y_0 = pos_ini_y - pend_y*tray.Min();
+        float pend_y = (range_graf_y)/((tray.Max()-tray.Min())+0.0001f);
+        float pend_x = range_graf_x/tray.Count;
         
+        float y_0 = pos_ini_y - pend_y*tray.Min();
+        float x_0 = pos_ini_x;
+
         lb_y_max.text = tray.Max().ToString("0.##");
         lb_y_min.text = tray.Min().ToString("0.##");
         lb_x_max.text = (Trayectoria.TIEMPO_MUESTREO*tray.Count()).ToString("0.##");
         line_render_graf.positionCount = tray.Count;
 
         for (int i = 0; i<line_render_graf.positionCount; i++){
-            Vector3 point = new Vector3(pos_ini_x+i,tray[i]*pend_y + y_0 ,0);
+            Vector3 point = new Vector3(condicionarNumero(x_0+i*pend_x), condicionarNumero(tray[i]*pend_y + y_0) ,0);
             line_render_graf.SetPosition(i,point);
         }
     }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using RobSof.Assets.Scripts.Interface.Articular;
+
 public class adaptador_circular : MonoBehaviour
 {
     public TMP_InputField inp_posx;
@@ -10,14 +12,28 @@ public class adaptador_circular : MonoBehaviour
     public TMP_InputField inp_posz;
     public TMP_InputField inp_radio;
     public Button btn_probar;
+    public Button btn_q0;
+
+    public GameObject obj_driver_rob_int; 
 
     Trayectoria tray = new Trayectoria();
     int TIEMPO_TRAYECTORIA = 3; // sec
+    
+    private interfaz_grafica graf_script;
+    
+    Rangos_arts rangos_arts = new Rangos_arts(); 
+    private DriverRobotInterfaz scrip_driver_rob_inter;
+
 
     // Start is called before the first frame update
     void Start()
     {
         btn_probar.onClick.AddListener(probar);
+        btn_q0.onClick.AddListener(v_Po);
+
+        // Se inicializa el driver que manera las gráficas, controlador.
+        scrip_driver_rob_inter = obj_driver_rob_int.GetComponent<DriverRobotInterfaz>();
+
         inp_posx.text = 0.5f.ToString();
         inp_posy.text = 0.ToString();
         inp_posz.text = 0.1f.ToString();
@@ -55,7 +71,7 @@ public class adaptador_circular : MonoBehaviour
             trayectoria.Item2[j].AddRange(TRAY.Item2[j]);
         }
 
-        StartCoroutine(mover_robot(trayectoria.Item1, trayectoria.Item2));
+        StartCoroutine(scrip_driver_rob_inter.mover_robot(trayectoria.Item1, trayectoria.Item2));
     }
     string probarstr(float[] values){
         string st = "";
@@ -64,25 +80,16 @@ public class adaptador_circular : MonoBehaviour
         }
         return st;
     }
+    void v_Po(){
 
-    IEnumerator mover_robot(List<List<float>> tray,List<List<float>> tc){
-        //com_udp.iniciar_cliente();
-        for (int i=0; i<tray[0].Count; i++ ){
-            List<float> tray_send = new List<float>();
-            for (int j=0; j<6; j++){
-                // Se asignan a las posiciones cartesianas
-                Posiciones_robot.POS_CAR[j] = tc[j][i];
+        float [] pos_ini = rangos_arts.po_ini_art_cart.ToArray();
 
-                // Se asignas a las posiciones articulares
-                Posiciones_robot.POS_ART[j] = tray[j][i];
-
-                // Se llena el tray_send
-                tray_send.Add(tray[j][i]);
-
-            }
-            //StartCoroutine(com_udp.trasnmitir(tray_send));
-            yield return 0;
+        for (int i=0; i<6; i++){
+            pos_ini[i] = pos_ini[i]*Mathf.Rad2Deg;
         }
-        //com_udp.cerrar_cliente(); 
+        
+        var tray_= tray.tray_articular(Posiciones_robot.POS_ART.ToArray(),pos_ini, TIEMPO_TRAYECTORIA+1, 6);
+        StartCoroutine(scrip_driver_rob_inter.mover_robot(tray_.Item1, tray_.Item2));
+
     }
 }
