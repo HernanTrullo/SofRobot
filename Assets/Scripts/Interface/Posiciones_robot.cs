@@ -19,6 +19,7 @@ public class Posiciones_robot : MonoBehaviour
     public static List<float> POS_ART_PAS_REAL = new List<float>(){0,0,0,0,0,0};
 
     public static List<List<float>> error = new List<List<float>>();
+    public static List<float> error_cart = new List<float>();
 
     private Rangos_arts rangos_arts = new Rangos_arts();
 
