@@ -90,7 +90,7 @@ public class Adaptador_art_puma : MonoBehaviour
             script_slider[i].set_value(""+rangos_arts.posiciones_iniciales[i].ToString("0.##"));
 
             // Gemelo digital
-            gemelo_digital.GetComponent<Gemelo_digital>().rotar_articulación(i, rangos_arts.posiciones_iniciales[i]);
+            gemelo_digital.GetComponent<Gemelo_digital>().rotar_articulacion(i, rangos_arts.posiciones_iniciales[i]);
         }
         
         // Se obtiene el script que maneja el scroll view internamente
@@ -99,6 +99,10 @@ public class Adaptador_art_puma : MonoBehaviour
 
         // Se ininializa el nombre del archivo 
         BD_panel.transform.GetComponent<BaseDatos>().set_NOMBRE_ARCHIVO_BD(bd_trayectorias.BD_PUMA_ART);
+
+        // Llamada a la base de datos
+        BD_Pruebas.guardar_trayectorias(new Trayectorias_PRU_BD());
+
     }
     // Update is called once per frame
     void Update()
@@ -171,6 +175,8 @@ public class Adaptador_art_puma : MonoBehaviour
 
         // Se inicializa la corrutina
         StartCoroutine(script_driver_rob_int.mover_robot_tray(tray_gen, tray_gen_car));
+
+        
     }
 
     void subir(){

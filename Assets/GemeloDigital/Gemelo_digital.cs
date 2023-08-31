@@ -16,7 +16,7 @@ public class Gemelo_digital : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Inicialización de las articualaciones 
+        // Inicialización de las articulaciones 
         arts[0] = art1;
         arts[1] = art2;
         arts[2] = art3;
@@ -30,11 +30,11 @@ public class Gemelo_digital : MonoBehaviour
     void Update()
     {
         for(int i=0; i<6; i++){
-            rotar_articulación(i, Posiciones_robot.POS_ART[i]);
+            rotar_articulacion(i, Posiciones_robot.POS_ART[i]);
         }
 
     }
-    public void rotar_articulación(int index_art, float angle){
+    public void rotar_articulacion(int index_art, float angle){
         if (index_art >=0 && index_art <=2 || index_art==5){
             rotacion.y = -angle;
         }
